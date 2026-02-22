@@ -1,0 +1,216 @@
+# AGENT OS – 6 Aylık Minimal Production Altyapı Planı
+
+## Donanım
+
+* 1x Kimsufi Dedicated
+* 12 Core CPU
+* 32 GB RAM
+* SSD Disk
+* LLM işlemleri harici API üzerinden (server compute yapmıyor)
+* Maksimum 100 agent
+* %50 long-running
+* %50 short-job (ephemeral)
+
+---
+
+# 1. Genel Mimari
+
+## Tek Node + Docker Swarm (Single Manager)
+
+Bu aşamada multi-node cluster GEREKLİ değil.
+Mevcut makine yeterli.
+
+Bileşenler:
+
+* Docker
+* Docker Swarm (single-node mode)
+* Traefik (reverse proxy)
+* Elixir Backend (Agent Control Plane)
+* PostgreSQL
+* Redis (queue için)
+* Agent container'ları
+
+---
+
+# 2. Agent Türleri
+
+## A) Long Running Agent (%50)
+
+Özellikler:
+
+* Sürekli çalışır
+* restart_policy: always
+* Memory limit zorunlu
+* CPU limit zorunlu
+
+Önerilen limitler:
+
+* RAM limit: 512MB – 1GB
+* CPU limit: 1 core
+
+Swarm service olarak deploy edilir.
+
+---
+
+## B) Short Job Agent (%50)
+
+Özellikler:
+
+* İş gelince ayağa kalkar
+* İş bitince kapanır
+* restart_policy: none
+* Auto-remove
+
+Önerilen limitler:
+
+* RAM limit: 128MB – 256MB
+* CPU limit: 0.5 core
+
+Ephemeral service veya run-mode container.
+
+---
+
+# 3. Agent Lifecycle Akışı
+
+1. Kullanıcı "Agent Oluştur" der
+2. Backend DB'ye agent kaydı açar
+3. Swarm üzerinden service create yapılır
+4. Traefik label ile subdomain oluşturulur
+5. Agent status DB'de takip edilir
+6. Short job bitince service remove edilir
+
+---
+
+# 4. Reverse Proxy Yapısı
+
+Traefik:
+
+* Wildcard domain
+* Otomatik SSL (Let's Encrypt)
+* Container label ile auto routing
+
+Örnek:
+agent-123.domain.com
+
+---
+
+# 5. Resource Politikası (ÇOK ÖNEMLİ)
+
+Hiçbir container limitsiz çalışmaz.
+
+Kurallar:
+
+* Her agent için memory limit zorunlu
+* CPU limit zorunlu
+* OOM kill aktif
+* Log rotation aktif
+
+Sunucu korunur.
+
+---
+
+# 6. Monitoring
+
+Minimum:
+
+* Docker stats
+* Basit system metrics
+* Disk kullanım alarmı
+
+Önerilen:
+
+* Prometheus
+* Grafana
+
+Ama MVP aşamasında basit monitoring yeterli.
+
+---
+
+# 7. Disk ve Log Yönetimi
+
+* Log rotation aktif
+* Max 100MB/container log
+* Günlük log cleanup
+* Database backup cron
+
+Disk dolması en büyük risktir.
+
+---
+
+# 8. Güvenlik
+
+* SSH key only
+* Root login kapalı
+* Firewall aktif
+* Docker socket dışarı açılmaz
+* Agent container privilege=false
+
+---
+
+# 9. Ne Zaman Scale Edilir?
+
+Aşağıdakiler olursa ikinci node eklenir:
+
+* Aynı anda 20+ büyük agent aktif
+* Load average sürekli yüksek
+* RAM %80 üstü kalıcı
+
+Scale Planı:
+
+1. Yeni Kimsufi al
+2. Swarm worker olarak join et
+3. Büyük agent'ları label ile o node'a taşı
+
+Rewrite gerekmez.
+
+---
+
+# 10. Bilinçli Olarak YAPILMAYANLAR
+
+Bu aşamada:
+
+* Kubernetes YOK
+* Nomad YOK
+* Hybrid cloud YOK
+* Serverless YOK
+* Multi-region YOK
+
+Neden?
+
+Çünkü:
+
+* 100 agent için gereksiz
+* Tek kişi için fazla operasyon yükü
+* Ürün geliştirmeyi yavaşlatır
+
+---
+
+# 11. Gerçek Odak
+
+Altyapı artık yeterince güçlü.
+Darboğaz infra değil.
+
+Odaklanılması gerekenler:
+
+* Agent state machine
+* Retry mekanizması
+* Rate limit handling
+* Queue sistemi
+* Timeout yönetimi
+* Cost tracking
+
+---
+
+# 12. Özet
+
+Mevcut 12 Core / 32GB makine ile:
+
+* 100 LLM API agent rahat çalışır
+* Docker Swarm yeterlidir
+* Cloud taşıma gereksizdir
+* Orchestrator karmaşası gereksizdir
+
+6 ay boyunca bu mimari değiştirilmez.
+
+Önce ürün.
+Sonra karmaşık altyapı.
