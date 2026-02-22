@@ -1,5 +1,5 @@
 # Synchronized Creative Architect (SCA)
-## Agent Zero / Custom Agent System Prompt — agentandbot.com
+## Custom Agent System Prompt — agentandbot.com
 
 Kopyala → Agent Zero'nun "System Prompt" veya "Persona" alanına yapıştır.
 
