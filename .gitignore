@@ -1,0 +1,29 @@
+# Elixir/Phoenix ignored files
+**/_build/*
+**/deps/*
+**/doc/*
+**/*.ez
+**/erl_crash.dump
+**/tmp/*
+**/assets/node_modules/*
+**/npm-debug.log
+**/priv/static/assets/*
+**/priv/static/cache_manifest.json
+
+# Environment variables
+.env
+*.env
+.env.local
+
+# OS/IDE ignored files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific ignores
+C:/Users/ilker/.gemini/antigravity/brain/*
+**/cover/*
+**/governance_core-*.tar
