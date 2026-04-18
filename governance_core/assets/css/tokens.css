@@ -4,8 +4,8 @@
    ============================================================ */
 
 :root {
-  --bg-light: ;
-  --bg-dark: ;
+  --bg-light: #F5F4F2;
+  --bg-dark: #1A1A1A;
 }
 
 /* primary font: Inter */
@@ -92,7 +92,7 @@
 
 /* ENY Contrast Techniques (V7.1) */
 [data-theme="light"] {
-  --eny-label-bg: ;
+  --eny-label-bg: #111;
   --eny-label-text: hsl(72, 98%, 54%);
   --eny-accent: hsl(72, 98%, 54%);
   --eny-text-readable: #111;

@@ -85,13 +85,18 @@ a {
 }
 
 :root {
-  --action: hsl(var(--h), var(--s), var(--l));
+  /* Project Context: agentandbot pillar */
+  --h: 256;
+  --s: 100%;
+  --l: 73%;
+
+  --action: var(--primary);
   --action-hover: hsl(var(--h), var(--s), calc(var(--l) + 4%));
   --action-soft: hsla(var(--h), var(--s), var(--l), 0.3);
   
-  --card-dark: #150A2A;        /* V4.4: Tinted surface (dark) */
-  --card-light: #F0EAFF;       /* V4.4: Tinted surface (light) */
-  --card-hover: #1E1040;       /* Elevated card hover — lila tint */
+  --card-dark: hsla(var(--h), var(--s), 10%, 0.8);        /* V7.1: Derived dark surface */
+  --card-light: hsla(var(--h), var(--s), 95%, 0.9);      /* V7.1: Derived light surface */
+  --card-hover: hsla(var(--h), var(--s), var(--l), 0.15);
 
   /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
