@@ -81,6 +81,7 @@ defmodule GovernanceCoreWeb do
       import Phoenix.HTML
       # Core UI components
       import GovernanceCoreWeb.CoreComponents
+      import GovernanceCoreWeb.BrandHelper
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

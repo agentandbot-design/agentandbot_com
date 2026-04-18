@@ -1,0 +1,99 @@
+/* ============================================================
+   GENERATED TOKENS — DO NOT EDIT MANUALLY
+   Source: brand/manifest.toml
+   ============================================================ */
+
+:root {
+  --bg-light: ;
+  --bg-dark: ;
+}
+
+/* primary font: Inter */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+/* display font: Syne */
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap");
+/* mono font: JetBrains Mono */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --font-ui: "Inter", sans-serif;
+  --font-heading: "Syne", sans-serif;
+  --font-code: "JetBrains Mono", sans-serif;
+}
+
+/* Brand Pillars (HSL) */
+[data-brand="ipcioglu"] {
+  --h: 355;
+  --s: 78%;
+  --l: 56%;
+}
+[data-brand="harezm"] {
+  --h: 324;
+  --s: 71%;
+  --l: 30%;
+}
+[data-brand="eny"] {
+  --h: 72;
+  --s: 98%;
+  --l: 54%;
+}
+[data-brand="agent"] {
+  --h: 256;
+  --s: 100%;
+  --l: 73%;
+}
+[data-brand="eany-core"] {
+  --h: 72;
+  --s: 98%;
+  --l: 54%;
+}
+[data-brand="eany-online"] {
+  --h: 355;
+  --s: 78%;
+  --l: 56%;
+}
+[data-brand="eany-info"] {
+  --h: 324;
+  --s: 71%;
+  --l: 30%;
+}
+
+:root:not([data-brand]) {
+  --h: 324;
+  --s: 71%;
+  --l: 30%;
+}
+
+/* Global State Engine */
+:root {
+  --primary: hsl(var(--h), var(--s), var(--l));
+  --primary-faded: hsla(var(--h), var(--s), var(--l), 0.15);
+}
+
+[data-state="hover"]      { --l: calc(var(--l) + 4%); }
+[data-state="active"]     { --l: calc(var(--l) + 8%); }
+[data-state="processing"] {
+  --h: 186;
+  --s: 100%;
+  --l: 50%;
+}
+[data-state="error"] {
+  --h: 0;
+}
+
+/* Layout */
+:root {
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+}
+
+/* ENY Contrast Techniques (V7.1) */
+[data-theme="light"] {
+  --eny-label-bg: ;
+  --eny-label-text: hsl(72, 98%, 54%);
+  --eny-accent: hsl(72, 98%, 54%);
+  --eny-text-readable: #111;
+}

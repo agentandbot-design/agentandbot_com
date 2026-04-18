@@ -9,58 +9,7 @@
 
 @plugin "../vendor/heroicons";
 
-/* ============================================================
-   1. CSS CUSTOM PROPERTIES — Design System v1 Tokens
-   ============================================================ */
-:root {
-  /* === AgentandBot Design Tokens — V4.4 Palette Aligned ===
-     PRIMARY: #C9B1FF (Soft Lila) — dark mode
-     PRIMARY: #9B77FF (Soft Lila açık) — light mode
-     BG: #0D0515 (palette dark panel) veya shared #1A1A1A
-  */
-
-  /* Backgrounds — V4.4: AgentandBot dark panel (#0D0515) */
-  --bg-dark: #0D0515;          /* V4.4: AgentandBot dark panel BG */
-  --bg-light: #F5F4F2;         /* V4.4: Shared light system */
-  --card-dark: #150A2A;        /* V4.4: Tinted surface (dark) */
-  --card-light: #F0EAFF;       /* V4.4: Tinted surface (light) */
-  --card-hover: #1E1040;       /* Elevated card hover — lila tint */
-
-  /* Text */
-  --text-pri: #E6EAF0;
-  --text-sec: #9AA4B2;
-  --text-dim: #64748B;
-
-  /* Accent — V4.4: Soft Lila */
-  --action: #C9B1FF;           /* V4.4: Primary — Soft Lila (dark) */
-  --action-hover: #E0CCFF;     /* V4.4: Highlight / Glow varyantı */
-  --action-soft: #D8C4FF;      /* V4.4: Muted / İkon / Tag */
-  --action-text: #3D1A8A;      /* V4.4: Buton metin — koyu lila */
-
-  /* Status */
-  --ok: #22C55E;
-  --warn: #F59E0B;
-  --err: #EF4444;
-  --idle: #64748B;
-
-  /* Borders — V4.4 shared system */
-  --border: #333333;           /* V4.4: Shared dark border */
-  --border-hover: rgba(201, 177, 255, 0.3); /* Lila accent border hover */
-
-  /* Spacing & Radius */
-  --radius: 8px;
-  --radius-sm: 4px;
-  --radius-full: 9999px;
-
-  /* Typography */
-  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-
-  /* Transitions */
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --duration: 0.2s;
-  --duration-slow: 0.4s;
-}
+@import "./tokens.css";
 
 /* ============================================================
    2. GLOBAL RESET & BASE
@@ -135,16 +84,24 @@ a {
   }
 }
 
-@keyframes blink {
+:root {
+  --action: hsl(var(--h), var(--s), var(--l));
+  --action-hover: hsl(var(--h), var(--s), calc(var(--l) + 4%));
+  --action-soft: hsla(var(--h), var(--s), var(--l), 0.3);
+  
+  --card-dark: #150A2A;        /* V4.4: Tinted surface (dark) */
+  --card-light: #F0EAFF;       /* V4.4: Tinted surface (light) */
+  --card-hover: #1E1040;       /* Elevated card hover — lila tint */
 
-  0%,
-  100% {
-    opacity: 1;
-  }
+  /* Transitions */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration: 0.2s;
+  --duration-slow: 0.4s;
+}
 
-  50% {
-    opacity: 0;
-  }
+@keyframes breathe {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 5px hsla(var(--h), var(--s), var(--l), 0.2)); }
+  50% { filter: brightness(1.2) drop-shadow(0 0 20px hsla(var(--h), var(--s), var(--l), 0.6)); }
 }
 
 @keyframes slideInLeft {
