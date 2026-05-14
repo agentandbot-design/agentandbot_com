@@ -1,0 +1,81 @@
+Bu doküman, **Harezm A.Ş.** çatısı altında geliştireceğin, hem kurumsal SAP dünyasına hem de Afrika'daki mikro-görev ekonomisine hitap eden **"Agentandbot: Hibrit Otonom Ekonomi Üssü"** projesinin nihai mimari ve uygulama rehberidir.
+
+---
+
+# 🚀 Harezm Agent Cloud: 2026 Master Plan
+
+Bu plan; tek kişilik dev bir operasyon (Solo Dev + AI) olarak, minimum maliyet ve maksimum güvenlik ile profesyonel bir "Agent-as-a-Service" platformu kurmanı hedefler.
+
+## 1. Mimari Karşılaştırma Matrisi
+
+Tartıştığımız alternatiflerin senin vizyonuna göre değerlendirmesi:
+
+| Özellik | Docker Swarm | **Nomad (Önerilen/Hafif)** | **K3s (Kubernetes - Pro)** |
+| --- | --- | --- | --- |
+| **Karmaşıklık** | Çok Düşük | Orta | Yüksek |
+| **Ölçeklenebilirlik** | Sınırlı | Çok İyi | Sınırsız (AWS/VPS) |
+| **Güvenlik** | Standart | Esnek | En Üst Düzey (gVisor/Kata) |
+| **Karar** | Başlangıç için hızlı. | Tek kişi için ideal denge. | **Geleceği en parlak olan.** |
+
+---
+
+## 2. Teknik Altyapı (The Pragmatic Stack)
+
+32 GB RAM ve 120 GB SSD limitlerini koruyarak seçilen profesyonel araçlar:
+
+### **A. Orkestrasyon ve Yönetim**
+
+* **K3s (Lightweight Kubernetes):** Sektör standardıdır; tek bir 64GB Hetzner sunucusunda başlar, ileride AWS veya ek VPS node'larını "çat diye" cluster'a eklemeni sağlar.
+* **Portainer (Business Edition - Free):** Rancher'ın aksine düşük RAM tüketir; konteynerları görsel olarak yönetmeni ve logları anlık görmeni sağlar.
+
+### **B. Güvenlik ve İzolasyon**
+
+* **gVisor (Google Sandboxing):** Kullanıcıların kendi **Agent-Zero** kodlarını senin sunucunda çalıştırabilmesi için şarttır.
+* Agent-Zero, kod yazabilen ve sistem komutları çalıştıran dinamik bir yapıdır; gVisor bu canavarı donanım seviyesinde izole eder.
+
+
+* **Namespace İzolasyonu:** Her kullanıcıya özel bir "namespace" açılarak CPU ve RAM limitleri (ResourceQuotas) tanımlanır.
+
+### **C. Ajan ve Masaüstü Katmanı**
+
+* **PicoClaw:** Ultra hafif asistan (<10MB RAM). 32GB sunucuda binlerce kişiye "bedava katman" olarak sunulabilir.
+* 
+**Agent-Zero:** Kompleks görevler (SAP entegrasyonu, veri analizi) için "Premium" ajan katmanıdır.
+
+
+* **noVNC + Ubuntu:** Tarayıcı üzerinden erişilen, lisans ücreti olmayan, düşük donanım dostu uzak masaüstü çözümü.
+
+---
+
+## 3. "Çat Diye" Çalışma Modeli (Müşteri Deneyimi)
+
+Müşterinin karmaşık altyapıyı görmemesi için şu "Harezm Gate" katmanını kurguluyoruz:
+
+1. **Giriş:** Kullanıcı **Moltbook Identity (SSO)** ile sisteme saniyeler içinde dahil olur.
+2. **Tetikleme:** Kullanıcı panelden "Agent-Zero Başlat" dediğinde, senin Next.js ile yazdığın portal arkada **Kubernetes API**'sine bir "Deployment" emri gönderir.
+3. **Hız:** Ajan imajları sunucuda önbelleğe (pre-cache) alınmış olduğu için kurulum 30 saniyenin altında tamamlanır.
+
+---
+
+## 4. 120 GB Disk ve Kaynak Yönetimi Stratejisi
+
+Bu dar alanda profesyonelce yaşamak için:
+
+* **Ephemeral Storage:** Pod'ların diske kontrolsüz veri yazması Kubernetes limitleri ile engellenir.
+* **Agresif Cleanup:** Her gece durmuş pod'ları ve eski logları temizleyen bir otomasyon çalışır.
+* **Netdata:** Tek bir konteyner ile sunucu sağlığı (Disk/RAM) anlık izlenir.
+
+---
+
+## 5. 1 Yıllık Uygulama Takvimi
+
+| Dönem | Odak Noktası | Hedef |
+| --- | --- | --- |
+| **1-2. Ay** | Temel Kurulum | K3s + Portainer kurulumu ve kendi web projelerinin taşınması. |
+| **3-4. Ay** | Ajan API | "Çat diye" ajan açan otonom portalın (Next.js + API) devreye alınması. |
+| **5-6. Ay** | Marketplace | Afrika vizyonu için mikro-görev ve ödeme (Solana/L2) entegrasyonu. |
+| **6-12. Ay** | Genişleme | Yeni VPS'lerin cluster'a eklenmesi ve global lansman. |
+
+> **Motto:** "Moltbook kim olduğunu söyler, Agentandbot ne yapabildiğini kanıtlar ve sana maaşını öder."
+
+**Bu planı hayata geçirmek için ilk adım olarak;** 32 GB sunucuna bu minimal ama profesyonel yapıyı (K3s + Portainer + gVisor) tek bir komutla kuracak o **"Harezm MVP Setup Script"** taslağını hazırlamamı ister misin?

@@ -1,0 +1,219 @@
+# 6 Aylık MVP Altyapı Planı (2–3 Server, Sıfır Ekstra Maliyet)
+
+## 0. Hedef
+
+* 2–3 VPS ile başlanacak
+* Para harcanmayacak (open source)
+* 6 ay boyunca mimari değişmeyecek
+* Sonrasında profesyonel cluster’a geçiş mümkün olacak
+* Tek kurucu / tek teknik kişi senaryosu
+
+---
+
+# 1. Alternatifler (Gerçekçi Değerlendirme)
+
+## A) Sadece Docker + Docker Compose
+
+**Ne zaman uygun?**
+
+* 1–2 server
+* Az servis
+* Basit deploy
+
+**Avantaj**
+
+* Çok hızlı başlangıç
+* Öğrenmesi kolay
+* Minimum operasyon yükü
+
+**Dezavantaj**
+
+* Multi-node yönetim zayıf
+* Otomatik reschedule yok
+* Scale zor
+
+---
+
+## B) Docker Swarm
+
+**Ne zaman uygun?**
+
+* 2–3 server
+* Basit cluster ihtiyacı
+* Hızlı orchestration
+
+**Avantaj**
+
+* Docker bilgisi yeterli
+* Kurulum çok basit
+* Hafif
+* MVP için ideal
+
+**Dezavantaj**
+
+* Büyük ölçek için sınırlı
+* Ekosistem zayıf
+
+---
+
+## C) Nomad
+
+**Ne zaman uygun?**
+
+* 2–3 server
+* User başına container
+* Agent runtime
+* Multi-tenant izolasyon
+
+**Avantaj**
+
+* Hafif orchestrator
+* Container dağıtımı temiz
+* Node düşerse yeniden schedule
+
+**Dezavantaj**
+
+* Öğrenme süresi
+* Consul / Vault ile karmaşıklık artar
+
+---
+
+## D) Kubernetes / k3s
+
+**Ne zaman uygun?**
+
+* Büyük scale
+* Enterprise hedef
+* DevOps ekibi varsa
+
+**Dezavantaj (senin için)**
+
+* Overkill
+* RAM tüketimi
+* Operasyonel karmaşıklık
+
+---
+
+# 2. Sana Önerilen Yol (Stratejik)
+
+## FAZ 1 – İlk 3 Ay (Basit ve Sağlam)
+
+### Server Yapısı
+
+Server 1 (Manager / Ana Node)
+
+* Docker
+* Reverse Proxy (Traefik veya Nginx)
+* Ana uygulamalar
+
+Server 2 (Worker)
+
+* Docker
+* Background işler
+* Agent workload
+
+Server 3 (Opsiyonel)
+
+* Database
+* Backup
+* Storage
+
+### Kurulum Prensipleri
+
+* Her servis container olacak
+* Volume’lar düzenli ayrılacak
+* Environment değişkenleri standardize edilecek
+* Deploy script ile yapılacak
+* SSH key ile erişim
+* Firewall aktif
+
+Bu fazda orchestrator YOK.
+Sistem basit, hızlı, kontrol sende.
+
+---
+
+## FAZ 2 – 3–6 Ay (Büyüme Başlarsa)
+
+Şu durumlar oluşursa:
+
+* Deploy karmaşıklaşır
+* Node dağılımı zorlaşır
+* User başına container başlarsan
+
+İki seçenek:
+
+### Seçenek 1: Docker Swarm’a Geç
+
+* Minimal öğrenme
+* Compose dosyaları büyük oranda korunur
+* Hızlı cluster
+
+### Seçenek 2: Nomad’a Geç
+
+* Gerçek scheduling
+* Daha temiz multi-node dağıtım
+* Agent sistemleri için daha uygun
+
+Geçiş mümkün çünkü:
+Container mimarisi zaten hazır olacak.
+Rewrite gerekmeyecek.
+
+---
+
+# 3. 6 Ay Sonunda Ne Olur?
+
+Eğer büyüme varsa:
+
+* Nomad veya k3s
+* Infrastructure as Code (Terraform)
+* Image build (Packer)
+* Secrets management (Vault)
+
+Eğer büyüme yoksa:
+
+* Basit Docker cluster devam eder
+* Maliyet düşük kalır
+
+---
+
+# 4. En Kritik Stratejik Nokta
+
+Seni yavaşlatacak şey:
+
+* Over-engineering
+* Enterprise taklidi yapmak
+
+Seni hızlandıracak şey:
+
+* Ürün geliştirmek
+* Müşteri kazanmak
+* Deploy süresini kısa tutmak
+
+---
+
+# 5. Net Tavsiye
+
+Bugün:
+
+* 2 VPS al
+* Docker kur
+* Reverse proxy kur
+* Projeyi containerize et
+* Script ile deploy yap
+
+Nomad veya Swarm ekleme.
+
+3–4 ay sonra ihtiyaca göre karar ver.
+
+---
+
+# Özet
+
+İlk 6 ay hedef:
+"Basit ama yükseltilebilir mimari"
+
+Kural:
+Önce ürün.
+Sonra orchestrator.
+
+
