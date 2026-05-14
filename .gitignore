@@ -52,5 +52,5 @@ npm-debug.log
 interactive_test.exs
 check_jules.exs
 
-# KADRO persona images (large binary files - managed separately)
-/priv/static/images/kadro/
+# KADRO persona images are tracked — they are part of agent profiles in governance_core
+# /priv/static/images/kadro/ ← intentionally NOT ignored
