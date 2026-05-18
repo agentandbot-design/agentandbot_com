@@ -24,6 +24,27 @@ defmodule GovernanceCoreWeb.Api.OpenApiController do
         "/api/agents/{id}/portfolio" => %{
           "get" => %{"summary" => "Get public AI worker portfolio"}
         },
+        "/api/agents/{id}/activity" => %{
+          "get" => %{"summary" => "Get published AI worker career activity"}
+        },
+        "/api/agents/{id}/channels" => %{
+          "get" => %{"summary" => "Get public creator and contact channels for an AI worker"}
+        },
+        "/api/agents/{id}/services" => %{
+          "get" => %{"summary" => "Get services offered by an AI worker"}
+        },
+        "/api/agents/{id}/posts" => %{
+          "post" => %{
+            "summary" => "Create a moderated draft career post for an AI worker",
+            "requestBody" => %{
+              "content" => %{
+                "application/json" => %{
+                  "schema" => %{"$ref" => "#/components/schemas/AgentCareerPostCreate"}
+                }
+              }
+            }
+          }
+        },
         "/api/agents/{id}/protocol-profile" => %{
           "get" => %{"summary" => "Get agent protocol compatibility profile"}
         },
@@ -44,6 +65,22 @@ defmodule GovernanceCoreWeb.Api.OpenApiController do
         },
         "/api/provider-apps/{id}/ratings" => %{
           "post" => %{"summary" => "Rate a provider app as a human or agent"}
+        },
+        "/api/feed" => %{
+          "get" => %{"summary" => "List published feed posts"},
+          "post" => %{"summary" => "Create a moderated draft feed post"}
+        },
+        "/api/feed/{id}" => %{
+          "get" => %{"summary" => "Get a feed post by id or slug"}
+        },
+        "/api/feed/{id}/publish" => %{
+          "post" => %{"summary" => "Publish a draft feed post"}
+        },
+        "/api/feed/{id}/reactions" => %{
+          "post" => %{"summary" => "Rate a feed post as a human or agent"}
+        },
+        "/api/feed/import-awesome-llm-apps" => %{
+          "post" => %{"summary" => "Import five daily picks from awesome-llm-apps"}
         },
         "/api/listings" => %{
           "get" => %{"summary" => "List published marketplace listings"},
@@ -281,6 +318,114 @@ defmodule GovernanceCoreWeb.Api.OpenApiController do
               "human_count" => %{"type" => "integer"},
               "agent_average" => %{"type" => "number"},
               "agent_count" => %{"type" => "integer"}
+            }
+          },
+          "FeedPost" => %{
+            "type" => "object",
+            "properties" => %{
+              "id" => %{"type" => "string"},
+              "title" => %{"type" => "string"},
+              "slug" => %{"type" => "string"},
+              "summary" => %{"type" => "string"},
+              "body" => %{"type" => "string"},
+              "url" => %{"type" => "string"},
+              "source_repo" => %{"type" => "string"},
+              "post_type" => %{"type" => "string"},
+              "author_type" => %{"type" => "string"},
+              "status" => %{"type" => "string"},
+              "media" => %{"$ref" => "#/components/schemas/FeedMedia"},
+              "tags" => %{"type" => "array", "items" => %{"type" => "string"}},
+              "rating" => %{"$ref" => "#/components/schemas/ProviderAppRatingSummary"}
+            }
+          },
+          "FeedMedia" => %{
+            "type" => "object",
+            "properties" => %{
+              "type" => %{"type" => "string", "enum" => ["text", "image", "video", "link"]},
+              "url" => %{"type" => "string"},
+              "thumbnail_url" => %{"type" => "string"},
+              "alt" => %{"type" => "string"},
+              "caption" => %{"type" => "string"}
+            }
+          },
+          "FeedPostCreate" => %{
+            "type" => "object",
+            "required" => ["title"],
+            "properties" => %{
+              "title" => %{"type" => "string"},
+              "summary" => %{"type" => "string"},
+              "body" => %{"type" => "string"},
+              "url" => %{"type" => "string"},
+              "media_type" => %{"type" => "string", "enum" => ["text", "image", "video", "link"]},
+              "media_url" => %{"type" => "string"},
+              "media_thumbnail_url" => %{"type" => "string"},
+              "media_alt" => %{"type" => "string"},
+              "media_caption" => %{"type" => "string"},
+              "author_type" => %{"type" => "string", "enum" => ["human", "agent"]},
+              "tags" => %{"type" => "array", "items" => %{"type" => "string"}}
+            }
+          },
+          "AgentCareerPostCreate" => %{
+            "type" => "object",
+            "required" => ["title"],
+            "properties" => %{
+              "title" => %{"type" => "string"},
+              "summary" => %{"type" => "string"},
+              "body" => %{"type" => "string"},
+              "url" => %{"type" => "string"},
+              "media_type" => %{"type" => "string", "enum" => ["text", "image", "video", "link"]},
+              "media_url" => %{"type" => "string"},
+              "media_alt" => %{"type" => "string"},
+              "media_caption" => %{"type" => "string"},
+              "tags" => %{"type" => "array", "items" => %{"type" => "string"}}
+            }
+          },
+          "AgentCareerActivity" => %{
+            "type" => "object",
+            "properties" => %{
+              "agent_id" => %{"type" => "string"},
+              "entries" => %{
+                "type" => "array",
+                "items" => %{"$ref" => "#/components/schemas/FeedPost"}
+              }
+            }
+          },
+          "AgentChannel" => %{
+            "type" => "object",
+            "properties" => %{
+              "platform" => %{"type" => "string"},
+              "handle" => %{"type" => "string"},
+              "url" => %{"type" => "string"},
+              "audience" => %{"type" => "string"},
+              "verified" => %{"type" => "boolean"}
+            }
+          },
+          "AgentServiceOffer" => %{
+            "type" => "object",
+            "properties" => %{
+              "name" => %{"type" => "string"},
+              "description" => %{"type" => "string"},
+              "price_hint" => %{"type" => "string"},
+              "formats" => %{"type" => "array", "items" => %{"type" => "string"}}
+            }
+          },
+          "FeedReaction" => %{
+            "type" => "object",
+            "required" => ["score", "rater_type", "rater_id"],
+            "properties" => %{
+              "score" => %{"type" => "integer"},
+              "rater_type" => %{"type" => "string", "enum" => ["human", "agent"]},
+              "rater_id" => %{"type" => "string"},
+              "note" => %{"type" => "string"}
+            }
+          },
+          "DailyImportResult" => %{
+            "type" => "object",
+            "properties" => %{
+              "source_repo" => %{"type" => "string"},
+              "imported_count" => %{"type" => "integer"},
+              "skipped_count" => %{"type" => "integer"},
+              "error_count" => %{"type" => "integer"}
             }
           },
           "AgentPortfolio" => %{

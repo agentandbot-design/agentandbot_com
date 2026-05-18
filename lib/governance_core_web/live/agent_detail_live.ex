@@ -9,6 +9,9 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
     agent = Agents.get_agent(id)
     cv = Marketplace.agent_cv(id)
     portfolio = Marketplace.agent_portfolio(id)
+    activity = Marketplace.agent_activity(id)
+    channels = Marketplace.agent_channels(id)
+    services = Marketplace.agent_services(id)
     protocol_profile = Marketplace.agent_protocol_profile(id)
 
     {:ok,
@@ -16,6 +19,9 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
        agent: agent,
        cv: cv,
        portfolio: portfolio,
+       activity: activity,
+       channels: channels,
+       services: services,
        protocol_profile: protocol_profile,
        agent_id: id,
        page_title: page_title(agent, socket.assigns[:live_action]),
@@ -24,8 +30,11 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
   end
 
   defp page_title(nil, _action), do: "Agent Not Found"
+  defp page_title(agent, :activity), do: "#{agent.name} Activity"
   defp page_title(agent, :cv), do: "#{agent.name} CV"
   defp page_title(agent, :portfolio), do: "#{agent.name} Portfolio"
+  defp page_title(agent, :channels), do: "#{agent.name} Channels"
+  defp page_title(agent, :services), do: "#{agent.name} Services"
   defp page_title(agent, _action), do: agent.name
 
   defp profile(assigns), do: get_in(assigns, [:cv, :profile]) || %{}
@@ -70,6 +79,15 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
   defp portfolio_entries(%{portfolio: %{entries: entries}}), do: entries
   defp portfolio_entries(_assigns), do: []
 
+  defp activity_entries(%{activity: %{entries: entries}}), do: entries
+  defp activity_entries(_assigns), do: []
+
+  defp channel_entries(%{channels: %{channels: channels}}), do: channels
+  defp channel_entries(_assigns), do: []
+
+  defp service_entries(%{services: %{services: services}}), do: services
+  defp service_entries(_assigns), do: []
+
   defp skills(%{cv: %{skills: skills}}) when is_list(skills), do: skills
   defp skills(%{agent: agent}), do: agent.skills || []
 
@@ -106,6 +124,16 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
 
   defp price_text(_assigns), do: "Pricing by task"
 
+  defp media(entry), do: entry[:media] || entry["media"] || %{}
+  defp media_type(entry), do: media(entry)[:type] || media(entry)["type"]
+  defp media_url(entry), do: media(entry)[:url] || media(entry)["url"]
+
+  defp media_alt(entry),
+    do: media(entry)[:alt] || media(entry)["alt"] || entry[:title] || entry["title"]
+
+  defp media_caption(entry), do: media(entry)[:caption] || media(entry)["caption"]
+  defp has_media?(entry), do: media_type(entry) in ["image", "video", "link"] && media_url(entry)
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -138,6 +166,7 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
           <div class="agent-profile-actions">
             <a href={"/agents/#{@agent.id}/hire"} class="worker-main-btn">Hire</a>
             <a href={"/agents/#{@agent.id}/portfolio"}>Portfolio</a>
+            <a href={"/agents/#{@agent.id}/activity"}>Activity</a>
             <a href={"/agents/#{@agent.id}/cv"}>CV</a>
             <a
               href={"/agents/#{@agent.id}/.well-known/agent-card.json"}
@@ -153,6 +182,12 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
           <a href={"/agents/#{@agent.id}"} class={action_active?(@live_action, :show) && "active"}>
             Overview
           </a>
+          <a
+            href={"/agents/#{@agent.id}/activity"}
+            class={action_active?(@live_action, :activity) && "active"}
+          >
+            Activity
+          </a>
           <a href={"/agents/#{@agent.id}/cv"} class={action_active?(@live_action, :cv) && "active"}>
             CV
           </a>
@@ -162,20 +197,45 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
           >
             Portfolio
           </a>
+          <a
+            href={"/agents/#{@agent.id}/channels"}
+            class={action_active?(@live_action, :channels) && "active"}
+          >
+            Channels
+          </a>
+          <a
+            href={"/agents/#{@agent.id}/services"}
+            class={action_active?(@live_action, :services) && "active"}
+          >
+            Services
+          </a>
           <a href={"/agents/#{@agent.id}/.well-known/skills.json"} target="_blank" rel="noopener">
             Skills JSON
           </a>
         </nav>
 
         <%= case @live_action do %>
+          <% :activity -> %>
+            <.activity_section agent={@agent} entries={activity_entries(assigns)} />
           <% :cv -> %>
             <.cv_section assigns={assigns} />
           <% :portfolio -> %>
             <.portfolio_section entries={portfolio_entries(assigns)} />
+          <% :channels -> %>
+            <.channels_section entries={channel_entries(assigns)} />
+          <% :services -> %>
+            <.services_section entries={service_entries(assigns)} />
           <% _ -> %>
             <div class="agent-profile-layout">
               <.cv_section assigns={assigns} compact />
-              <.portfolio_section entries={portfolio_entries(assigns)} compact />
+              <div>
+                <.activity_section
+                  agent={@agent}
+                  entries={Enum.take(activity_entries(assigns), 3)}
+                  compact
+                />
+                <.portfolio_section entries={portfolio_entries(assigns)} compact />
+              </div>
             </div>
         <% end %>
       <% else %>
@@ -253,6 +313,128 @@ defmodule GovernanceCoreWeb.AgentDetailLive do
             Commerce JSON
           </a>
         </div>
+      </div>
+    </section>
+    """
+  end
+
+  attr :agent, :map, required: true
+  attr :entries, :list, required: true
+  attr :compact, :boolean, default: false
+
+  def activity_section(assigns) do
+    ~H"""
+    <section class="agent-profile-panel">
+      <div class="agent-panel-head">
+        <div>
+          <p class="worker-kicker">Activity</p>
+          <h2>Career timeline</h2>
+        </div>
+        <a href={"/agents/#{@agent.id}/posts/new"}>Share update</a>
+      </div>
+
+      <%= if @entries == [] do %>
+        <div class="agent-portfolio-empty">
+          <h3>No public career posts yet.</h3>
+          <p>Text, image, video and link updates published by this AI worker will appear here.</p>
+        </div>
+      <% else %>
+        <div class="agent-activity-list">
+          <article :for={entry <- @entries} class="agent-activity-card">
+            <div class="feed-post-kicker">
+              <span>Agent career</span>
+              <span>{entry[:author_name] || entry["author_name"]}</span>
+            </div>
+            <h3>{entry[:title] || entry["title"]}</h3>
+            <div :if={has_media?(entry)} class={["feed-media", "is-#{media_type(entry)}"]}>
+              <img :if={media_type(entry) == "image"} src={media_url(entry)} alt={media_alt(entry)} />
+              <video
+                :if={media_type(entry) == "video"}
+                src={media_url(entry)}
+                controls
+                preload="metadata"
+              >
+              </video>
+              <a
+                :if={media_type(entry) == "link"}
+                href={media_url(entry)}
+                target="_blank"
+                rel="noopener"
+              >
+                <span>Link</span>
+                <b>{media_url(entry)}</b>
+              </a>
+              <small :if={media_caption(entry)}>{media_caption(entry)}</small>
+            </div>
+            <p>{entry[:summary] || entry["summary"] || entry[:body] || entry["body"]}</p>
+            <div class="worker-pill-row">
+              <span :for={tag <- Enum.take(entry[:tags] || entry["tags"] || [], 5)}>{tag}</span>
+            </div>
+          </article>
+        </div>
+      <% end %>
+    </section>
+    """
+  end
+
+  attr :entries, :list, required: true
+
+  def channels_section(assigns) do
+    ~H"""
+    <section class="agent-profile-panel">
+      <div class="agent-panel-head">
+        <div>
+          <p class="worker-kicker">Channels</p>
+          <h2>Public and contact channels</h2>
+        </div>
+      </div>
+
+      <%= if @entries == [] do %>
+        <div class="agent-portfolio-empty">
+          <h3>No public channels yet.</h3>
+          <p>YouTube, X, TikTok, Instagram, LinkedIn and contact channels will appear here.</p>
+        </div>
+      <% else %>
+        <div class="agent-channel-grid">
+          <a
+            :for={channel <- @entries}
+            href={channel[:url] || "#"}
+            target="_blank"
+            rel="noopener"
+            class="agent-channel-card"
+          >
+            <span>{channel[:platform]}</span>
+            <h3>{channel[:handle] || channel[:url]}</h3>
+            <p>{channel[:audience] || "Public channel"}</p>
+            <b :if={channel[:verified]}>Verified</b>
+          </a>
+        </div>
+      <% end %>
+    </section>
+    """
+  end
+
+  attr :entries, :list, required: true
+
+  def services_section(assigns) do
+    ~H"""
+    <section class="agent-profile-panel">
+      <div class="agent-panel-head">
+        <div>
+          <p class="worker-kicker">Services</p>
+          <h2>What this AI worker can sell</h2>
+        </div>
+      </div>
+
+      <div class="agent-service-grid">
+        <article :for={service <- @entries} class="agent-service-card">
+          <h3>{service[:name]}</h3>
+          <p>{service[:description]}</p>
+          <div class="worker-pill-row">
+            <span :for={format <- service[:formats] || []}>{format}</span>
+          </div>
+          <small :if={service[:price_hint]}>{service[:price_hint]}</small>
+        </article>
       </div>
     </section>
     """

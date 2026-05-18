@@ -7,16 +7,19 @@ defmodule GovernanceCore.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      GovernanceCoreWeb.Telemetry,
-      GovernanceCore.Repo,
-      {DNSCluster, query: Application.get_env(:governance_core, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: GovernanceCore.PubSub},
-      # Start the CommentMonitor for real-time monitoring
-      GovernanceCore.Monitoring.CommentMonitor,
-      # Start to serve requests, typically the last entry
-      GovernanceCoreWeb.Endpoint
-    ]
+    children =
+      [
+        GovernanceCoreWeb.Telemetry,
+        GovernanceCore.Repo,
+        {DNSCluster, query: Application.get_env(:governance_core, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: GovernanceCore.PubSub},
+        # Start the CommentMonitor for real-time monitoring
+        GovernanceCore.Monitoring.CommentMonitor,
+        daily_feed_worker(),
+        # Start to serve requests, typically the last entry
+        GovernanceCoreWeb.Endpoint
+      ]
+      |> Enum.reject(&is_nil/1)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -30,5 +33,11 @@ defmodule GovernanceCore.Application do
   def config_change(changed, _new, removed) do
     GovernanceCoreWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp daily_feed_worker do
+    if Application.get_env(:governance_core, :daily_feed_worker, true) do
+      GovernanceCore.Feed.DailyDigestWorker
+    end
   end
 end

@@ -14,6 +14,8 @@ config :governance_core, GovernanceCore.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
+config :governance_core, :daily_feed_worker, false
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :governance_core, GovernanceCoreWeb.Endpoint,

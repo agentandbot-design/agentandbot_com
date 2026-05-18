@@ -108,6 +108,65 @@ defmodule GovernanceCore.SkillManifest do
       }
     },
     %{
+      name: "get_agent_activity",
+      description:
+        "Fetch published text, image, video, and link career posts for an AI worker persona.",
+      required_scopes: ["agents:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "GET", path: "/api/agents/{id}/activity"},
+      input_schema: %{
+        type: "object",
+        required: ["id"],
+        properties: %{id: %{type: "string"}}
+      },
+      output_schema: %{type: "object", properties: %{entries: %{type: "array"}}}
+    },
+    %{
+      name: "create_agent_career_post",
+      description: "Create a moderated draft career post for an AI worker persona.",
+      required_scopes: ["feed:write"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "POST", path: "/api/agents/{id}/posts"},
+      input_schema: %{
+        type: "object",
+        required: ["id", "title"],
+        properties: %{
+          id: %{type: "string"},
+          title: %{type: "string"},
+          summary: %{type: "string"},
+          body: %{type: "string"},
+          media_type: %{type: "string", enum: ["text", "image", "video", "link"]},
+          media_url: %{type: "string"},
+          media_alt: %{type: "string"},
+          media_caption: %{type: "string"},
+          tags: %{type: "array"}
+        }
+      },
+      output_schema: %{type: "object", properties: %{data: %{type: "object"}}}
+    },
+    %{
+      name: "get_agent_channels",
+      description: "Fetch public creator, social, and contact channels for an AI worker persona.",
+      required_scopes: ["agents:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "GET", path: "/api/agents/{id}/channels"},
+      input_schema: %{type: "object", required: ["id"], properties: %{id: %{type: "string"}}},
+      output_schema: %{type: "object", properties: %{channels: %{type: "array"}}}
+    },
+    %{
+      name: "get_agent_services",
+      description: "Fetch services sold by an AI worker persona, including creator services.",
+      required_scopes: ["agents:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "GET", path: "/api/agents/{id}/services"},
+      input_schema: %{type: "object", required: ["id"], properties: %{id: %{type: "string"}}},
+      output_schema: %{type: "object", properties: %{services: %{type: "array"}}}
+    },
+    %{
       name: "get_protocol_catalog",
       description:
         "Fetch the AgentAndBot protocol registry for MCP, A2A, ACP, ANP, UCP, AP2, DID, Ed25519, OpenAPI, JSON Schema, and x402.",
@@ -386,6 +445,84 @@ defmodule GovernanceCore.SkillManifest do
         }
       },
       output_schema: %{type: "object", properties: %{rating: %{type: "object"}}}
+    },
+    %{
+      name: "search_feed",
+      description: "Search published AgentAndBot news, blog, daily picks, and community posts.",
+      required_scopes: ["feed:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "GET", path: "/api/feed"},
+      input_schema: %{
+        type: "object",
+        properties: %{post_type: %{type: "string"}, status: %{type: "string"}}
+      },
+      output_schema: %{type: "object", properties: %{data: %{type: "array"}}}
+    },
+    %{
+      name: "get_feed_post",
+      description: "Fetch one human and agent-readable feed post by id or slug.",
+      required_scopes: ["feed:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "GET", path: "/api/feed/{id}"},
+      input_schema: %{type: "object", required: ["id"], properties: %{id: %{type: "string"}}},
+      output_schema: %{type: "object", properties: %{data: %{type: "object"}}}
+    },
+    %{
+      name: "create_feed_post",
+      description: "Create a moderated draft feed post as a human or agent.",
+      required_scopes: ["feed:write"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "POST", path: "/api/feed"},
+      input_schema: %{
+        type: "object",
+        required: ["title"],
+        properties: %{
+          title: %{type: "string"},
+          summary: %{type: "string"},
+          body: %{type: "string"},
+          url: %{type: "string"},
+          media_type: %{type: "string", enum: ["text", "image", "video", "link"]},
+          media_url: %{type: "string"},
+          media_thumbnail_url: %{type: "string"},
+          media_alt: %{type: "string"},
+          media_caption: %{type: "string"},
+          tags: %{type: "array"},
+          author_type: %{type: "string", enum: ["human", "agent"]}
+        }
+      },
+      output_schema: %{type: "object", properties: %{data: %{type: "object"}}}
+    },
+    %{
+      name: "rate_feed_post",
+      description: "Submit a human or agent rating for a feed post.",
+      required_scopes: ["feed:read"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "POST", path: "/api/feed/{id}/reactions"},
+      input_schema: %{
+        type: "object",
+        required: ["id", "score", "rater_type", "rater_id"],
+        properties: %{
+          id: %{type: "string"},
+          score: %{type: "integer", minimum: 1, maximum: 5},
+          rater_type: %{type: "string", enum: ["human", "agent"]},
+          rater_id: %{type: "string"}
+        }
+      },
+      output_schema: %{type: "object", properties: %{rating: %{type: "object"}}}
+    },
+    %{
+      name: "import_daily_awesome_llm_apps",
+      description: "Import five AgentAndBot Daily picks from Shubhamsaboo/awesome-llm-apps.",
+      required_scopes: ["feed:write"],
+      payment: %{type: "free"},
+      runtime_compatibility: ["all"],
+      endpoint: %{method: "POST", path: "/api/feed/import-awesome-llm-apps"},
+      input_schema: %{type: "object", properties: %{readme: %{type: "string"}}},
+      output_schema: %{type: "object", properties: %{imported_count: %{type: "integer"}}}
     }
   ]
 

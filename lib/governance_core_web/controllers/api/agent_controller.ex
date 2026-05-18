@@ -66,6 +66,67 @@ defmodule GovernanceCoreWeb.Api.AgentController do
     end
   end
 
+  def activity(conn, %{"id" => id}) do
+    case Marketplace.agent_activity(id) do
+      nil ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Agent not found", id: id})
+
+      activity ->
+        json(conn, %{data: activity})
+    end
+  end
+
+  def channels(conn, %{"id" => id}) do
+    case Marketplace.agent_channels(id) do
+      nil ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Agent not found", id: id})
+
+      channels ->
+        json(conn, %{data: channels})
+    end
+  end
+
+  def services(conn, %{"id" => id}) do
+    case Marketplace.agent_services(id) do
+      nil ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Agent not found", id: id})
+
+      services ->
+        json(conn, %{data: services})
+    end
+  end
+
+  def create_post(conn, %{"id" => id} = params) do
+    params =
+      Map.drop(params, ["id", "author_type", "author_id", "author_name", "status", "post_type"])
+
+    case Marketplace.create_agent_career_post(id, params) do
+      {:ok, post} ->
+        conn
+        |> put_status(:created)
+        |> json(%{
+          data: GovernanceCore.Feed.post_payload(post),
+          message: "Agent career post saved as draft"
+        })
+
+      {:error, :agent_not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Agent not found", id: id})
+
+      {:error, _changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Validation failed", details: "Check required fields"})
+    end
+  end
+
   def protocol_profile(conn, %{"id" => id}) do
     case Marketplace.agent_protocol_profile(id) do
       nil ->
@@ -165,10 +226,15 @@ defmodule GovernanceCoreWeb.Api.AgentController do
         skill_manifest_url: "/agents/#{agent.id}/.well-known/skills.json",
         cv_url: "/agents/#{agent.id}/cv",
         portfolio_url: "/agents/#{agent.id}/portfolio",
+        activity_url: "/agents/#{agent.id}/activity",
+        channels_url: "/agents/#{agent.id}/channels",
+        services_url: "/agents/#{agent.id}/services",
+        career_post_url: "/agents/#{agent.id}/posts/new",
         protocol_profile_url: "/api/agents/#{agent.id}/protocol-profile",
         identity_url: "/api/agents/#{agent.id}/identity",
         commerce_url: "/api/agents/#{agent.id}/commerce"
       },
+      career: (Marketplace.agent_cv(agent.id) || %{})[:career],
       skills: agent.skills || [],
       price_monthly: agent.price_monthly,
       owner: agent.owner

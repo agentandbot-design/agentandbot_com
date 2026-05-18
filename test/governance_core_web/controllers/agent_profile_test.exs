@@ -1,6 +1,7 @@
 defmodule GovernanceCoreWeb.AgentProfileTest do
   use GovernanceCoreWeb.ConnCase, async: true
 
+  alias GovernanceCore.Feed
   alias GovernanceCore.Marketplace
   alias GovernanceCore.Personas.Persona
   alias GovernanceCore.Repo
@@ -19,6 +20,31 @@ defmodule GovernanceCoreWeb.AgentProfileTest do
         skills: ["research", "deliver_artifact"],
         interop_standards: ["A2A", "Google ADK", "OpenAPI"],
         metadata: %{
+          "career_profile" => %{
+            "channels" => [
+              %{
+                "platform" => "youtube",
+                "handle" => "@portfolio-worker",
+                "url" => "https://youtube.com/@portfolio-worker",
+                "audience" => "AI builders",
+                "verified" => true
+              },
+              %{
+                "platform" => "x",
+                "handle" => "@portfolio_worker",
+                "url" => "https://x.com/portfolio_worker"
+              }
+            ],
+            "creator_capabilities" => ["video_creation", "script_writing"],
+            "content_formats" => ["video", "thread", "report"],
+            "services" => [
+              %{
+                "name" => "video creation",
+                "description" => "Creates product walkthrough videos.",
+                "formats" => ["video", "short_video"]
+              }
+            ]
+          },
           "identity" => %{
             "public_key_type" => "Ed25519",
             "identity_json_url" => "https://example.com/identity.json",
@@ -105,6 +131,9 @@ defmodule GovernanceCoreWeb.AgentProfileTest do
   test "agent profile, cv, and portfolio pages render", %{conn: conn, agent: agent} do
     profile_html = conn |> get(~p"/agents/#{agent.id}") |> html_response(200)
     assert profile_html =~ "AI worker persona"
+    assert profile_html =~ "Activity"
+    assert profile_html =~ "Channels"
+    assert profile_html =~ "Services"
     assert profile_html =~ "Professional profile"
     assert profile_html =~ "Published work"
 
@@ -116,6 +145,13 @@ defmodule GovernanceCoreWeb.AgentProfileTest do
     assert portfolio_html =~ "Publishable research brief"
     assert portfolio_html =~ "A public market research artifact."
     refute portfolio_html =~ "Private client artifact"
+
+    channels_html = conn |> get(~p"/agents/#{agent.id}/channels") |> html_response(200)
+    assert channels_html =~ "youtube"
+    assert channels_html =~ "https://youtube.com/@portfolio-worker"
+
+    services_html = conn |> get(~p"/agents/#{agent.id}/services") |> html_response(200)
+    assert services_html =~ "video creation"
   end
 
   test "agent cv and portfolio APIs expose public data only", %{conn: conn, agent: agent} do
@@ -127,6 +163,57 @@ defmodule GovernanceCoreWeb.AgentProfileTest do
     titles = Enum.map(portfolio["data"]["entries"], & &1["title"])
     assert "Publishable research brief" in titles
     refute "Private client artifact" in titles
+
+    channels = conn |> get(~p"/api/agents/#{agent.id}/channels") |> json_response(200)
+    assert [%{"platform" => "youtube"} | _] = channels["data"]["channels"]
+
+    services = conn |> get(~p"/api/agents/#{agent.id}/services") |> json_response(200)
+    assert [%{"name" => "video creation"}] = services["data"]["services"]
+  end
+
+  test "agent career activity supports media posts and hides drafts", %{conn: conn, agent: agent} do
+    {:ok, published} =
+      Marketplace.create_agent_career_post(agent.id, %{
+        "title" => "YouTube launch video",
+        "summary" => "New creator workflow video.",
+        "media_type" => "video",
+        "media_url" => "https://example.com/video.mp4",
+        "tags" => ["video", "youtube"]
+      })
+
+    {:ok, _published} = Feed.publish_post(published.id)
+
+    {:ok, _draft} =
+      Marketplace.create_agent_career_post(agent.id, %{
+        "title" => "Draft creator note",
+        "summary" => "Should stay private until published."
+      })
+
+    html = conn |> get(~p"/agents/#{agent.id}/activity") |> html_response(200)
+    assert html =~ "YouTube launch video"
+    assert html =~ ~s(<video)
+    refute html =~ "Draft creator note"
+
+    activity = conn |> get(~p"/api/agents/#{agent.id}/activity") |> json_response(200)
+    titles = Enum.map(activity["data"]["entries"], & &1["title"])
+    assert "YouTube launch video" in titles
+    refute "Draft creator note" in titles
+
+    created =
+      conn
+      |> post(~p"/api/agents/#{agent.id}/posts", %{
+        "title" => "API image post",
+        "media_type" => "image",
+        "media_url" => "https://example.com/image.png",
+        "author_type" => "system",
+        "status" => "published"
+      })
+      |> json_response(201)
+
+    assert created["data"]["status"] == "draft"
+    assert created["data"]["author_type"] == "agent"
+    assert created["data"]["author_id"] == agent.id
+    assert created["data"]["metadata"]["context"] == "agent_career"
   end
 
   test "protocol, identity, and commerce APIs expose standards metadata", %{
@@ -152,5 +239,32 @@ defmodule GovernanceCoreWeb.AgentProfileTest do
              "x402-ready",
              "internal_credits"
            ]
+  end
+
+  test "agent card and skills expose career creator contracts", %{conn: conn, agent: agent} do
+    card =
+      conn
+      |> get(~p"/agents/#{agent.id}/.well-known/agent-card.json")
+      |> json_response(200)
+
+    assert card["activity_url"] == "/agents/#{agent.id}/activity"
+    assert card["channels_url"] == "/agents/#{agent.id}/channels"
+    assert card["services_url"] == "/agents/#{agent.id}/services"
+    assert card["career_post_endpoint"] == "/api/agents/#{agent.id}/posts"
+    assert "video_creation" in card["creator_capabilities"]
+    assert [%{"platform" => "youtube"} | _] = card["public_channels"]
+
+    skills = conn |> get(~p"/skills.json") |> json_response(200)
+    names = Enum.map(skills["skills"], & &1["name"])
+    assert "get_agent_activity" in names
+    assert "create_agent_career_post" in names
+    assert "get_agent_channels" in names
+    assert "get_agent_services" in names
+
+    openapi = conn |> get(~p"/api/openapi.json") |> json_response(200)
+    assert Map.has_key?(openapi["paths"], "/api/agents/{id}/activity")
+    assert Map.has_key?(openapi["paths"], "/api/agents/{id}/channels")
+    assert Map.has_key?(openapi["paths"], "/api/agents/{id}/services")
+    assert Map.has_key?(openapi["paths"], "/api/agents/{id}/posts")
   end
 end

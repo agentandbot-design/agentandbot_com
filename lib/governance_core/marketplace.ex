@@ -7,6 +7,7 @@ defmodule GovernanceCore.Marketplace do
 
   alias Ecto.Multi
   alias GovernanceCore.Agents
+  alias GovernanceCore.Feed
   alias GovernanceCore.ProtocolCatalog
   alias GovernanceCore.RuntimeCatalog
 
@@ -951,6 +952,7 @@ defmodule GovernanceCore.Marketplace do
         )
 
       skills = Enum.uniq((agent.skills || []) ++ ((listing && listing.required_skills) || []))
+      career = career_profile(agent, profile, skills)
 
       %{
         agent_id: agent.id,
@@ -958,6 +960,7 @@ defmodule GovernanceCore.Marketplace do
         headline: profile["profession"] || agent.role || agent.category || "AI worker persona",
         summary: profile["personality"] || agent.description || listing_summary(listing),
         profile: profile,
+        career: career,
         skills: skills,
         runtime: %{
           kind: agent.runtime_kind || agent.type,
@@ -974,13 +977,69 @@ defmodule GovernanceCore.Marketplace do
         },
         links: %{
           public_profile: "/agents/#{agent.id}",
+          activity: "/agents/#{agent.id}/activity",
           cv: "/agents/#{agent.id}/cv",
           portfolio: "/agents/#{agent.id}/portfolio",
+          channels: "/agents/#{agent.id}/channels",
+          services: "/agents/#{agent.id}/services",
+          career_post: "/agents/#{agent.id}/posts/new",
           external_cv: profile["cv_url"],
           agent_card: "/agents/#{agent.id}/.well-known/agent-card.json",
           skills_manifest: "/agents/#{agent.id}/.well-known/skills.json"
         }
       }
+    end
+  end
+
+  def agent_activity(agent_id) do
+    with agent when not is_nil(agent) <- Agents.get_agent(agent_id) do
+      entries =
+        Feed.list_posts(
+          status: "published",
+          author_type: "agent",
+          author_id: agent.id,
+          context: "agent_career"
+        )
+        |> Enum.map(&Feed.post_payload/1)
+
+      %{agent_id: agent.id, name: agent.name, entries: entries}
+    end
+  end
+
+  def agent_channels(agent_id) do
+    with agent when not is_nil(agent) <- Agents.get_agent(agent_id) do
+      cv = agent_cv(agent.id)
+      channels = get_in(cv || %{}, [:career, :channels]) || []
+
+      %{agent_id: agent.id, name: agent.name, channels: channels}
+    end
+  end
+
+  def agent_services(agent_id) do
+    with agent when not is_nil(agent) <- Agents.get_agent(agent_id) do
+      cv = agent_cv(agent.id)
+      career = (cv && cv.career) || %{}
+
+      %{agent_id: agent.id, name: agent.name, services: career.services || []}
+    end
+  end
+
+  def create_agent_career_post(agent_id, attrs) do
+    with agent when not is_nil(agent) <- Agents.get_agent(agent_id) do
+      attrs = Feed.stringify_keys(attrs || %{})
+      metadata = Map.get(attrs, "metadata", %{}) || %{}
+
+      attrs
+      |> Map.put("author_type", "agent")
+      |> Map.put("author_id", agent.id)
+      |> Map.put("author_name", agent.name)
+      |> Map.put(
+        "metadata",
+        Map.merge(metadata, %{"context" => "agent_career", "agent_id" => agent.id})
+      )
+      |> Feed.create_post()
+    else
+      nil -> {:error, :agent_not_found}
     end
   end
 
@@ -1470,6 +1529,166 @@ defmodule GovernanceCore.Marketplace do
 
   defp listing_summary(nil), do: nil
   defp listing_summary(%AgentListing{summary: summary}), do: summary
+
+  defp career_profile(agent, profile, skills) do
+    metadata = Map.get(agent.metadata || %{}, "career_profile", %{})
+
+    %{
+      headline:
+        metadata["headline"] || profile["profession"] || agent.role || agent.category ||
+          "AI worker persona",
+      about: metadata["about"] || profile["personality"] || agent.description,
+      availability: metadata["availability"] || "available_for_task_hire",
+      channels: safe_channels(metadata["channels"], profile),
+      creator_capabilities:
+        non_empty_list(
+          metadata["creator_capabilities"],
+          default_creator_capabilities(skills, profile)
+        ),
+      content_formats:
+        non_empty_list(
+          metadata["content_formats"],
+          ["video", "short_video", "thread", "blog_post", "image", "report"]
+        ),
+      work_preferences:
+        Map.merge(
+          %{
+            "hireable" => true,
+            "rentable" => true,
+            "accepts_collab" => true,
+            "remote_only" => true,
+            "languages" => ["en", "tr"]
+          },
+          metadata["work_preferences"] || %{}
+        ),
+      services: safe_services(metadata["services"], skills)
+    }
+  end
+
+  defp safe_channels(channels, _profile) when is_list(channels) and channels != [] do
+    channels
+    |> Enum.filter(&is_map/1)
+    |> Enum.map(&safe_channel/1)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp safe_channels(_channels, profile) do
+    [
+      {"youtube", profile["youtube"]},
+      {"x", profile["x"]},
+      {"instagram", profile["instagram"]},
+      {"tiktok", profile["tiktok"]},
+      {"linkedin", profile["linkedin"]},
+      {"facebook", profile["facebook"]},
+      {"email", profile["email"]},
+      {"telegram", profile["telegram"]},
+      {"whatsapp", profile["whatsapp"]}
+    ]
+    |> Enum.map(fn {platform, url_or_handle} ->
+      safe_channel(%{"platform" => platform, "url" => url_or_handle, "handle" => url_or_handle})
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp safe_channel(channel) do
+    platform = channel["platform"] || channel[:platform]
+    url = channel["url"] || channel[:url]
+    handle = channel["handle"] || channel[:handle]
+
+    if platform in [nil, ""] or (url in [nil, ""] and handle in [nil, ""]) do
+      nil
+    else
+      %{
+        platform: platform,
+        handle: handle,
+        url: url,
+        audience: channel["audience"] || channel[:audience],
+        verified: parse_bool(channel["verified"] || channel[:verified])
+      }
+    end
+  end
+
+  defp safe_services(services, _skills) when is_list(services) and services != [] do
+    services
+    |> Enum.map(&safe_service/1)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp safe_services(_services, skills) do
+    default_services(skills)
+  end
+
+  defp safe_service(service) when is_map(service) do
+    name = service["name"] || service[:name]
+
+    if name in [nil, ""] do
+      nil
+    else
+      %{
+        name: name,
+        description: service["description"] || service[:description] || "#{name} delivery",
+        price_hint: service["price_hint"] || service[:price_hint],
+        formats: service["formats"] || service[:formats] || []
+      }
+    end
+  end
+
+  defp safe_service(service) when is_binary(service) and service != "" do
+    %{name: service, description: "#{service} delivery", price_hint: nil, formats: []}
+  end
+
+  defp safe_service(_service), do: nil
+
+  defp default_creator_capabilities(skills, profile) do
+    source =
+      Enum.join((skills || []) ++ [profile["content"], profile["social"]], " ")
+      |> String.downcase()
+
+    [
+      {"video_creation", ["video", "youtube", "short", "reels"]},
+      {"image_generation", ["image", "visual", "instagram", "carousel"]},
+      {"writing", ["write", "content", "blog", "script", "copy"]},
+      {"voiceover", ["voice", "audio", "podcast"]},
+      {"editing", ["edit", "post-production"]},
+      {"social_distribution", ["social", "twitter", "x", "tiktok", "linkedin"]}
+    ]
+    |> Enum.filter(fn {_capability, needles} ->
+      Enum.any?(needles, &String.contains?(source, &1))
+    end)
+    |> Enum.map(&elem(&1, 0))
+    |> case do
+      [] -> ["writing", "research", "social_distribution"]
+      capabilities -> capabilities
+    end
+  end
+
+  defp default_services(skills) do
+    service_names =
+      [
+        "video creation",
+        "script writing",
+        "shorts generation",
+        "social posting",
+        "research",
+        "coding",
+        "automation",
+        "red-team",
+        "eval"
+      ]
+
+    skill_text = Enum.join(skills || [], " ") |> String.downcase()
+
+    service_names
+    |> Enum.filter(fn name ->
+      String.contains?(skill_text, String.split(name) |> List.first()) or
+        name in ["research", "automation"]
+    end)
+    |> Enum.uniq()
+    |> Enum.map(&safe_service/1)
+  end
+
+  defp non_empty_list(value, _fallback) when is_list(value) and value != [], do: value
+  defp non_empty_list(_value, fallback), do: fallback
 
   defp task_metadata_update(task, attrs) do
     portfolio = portfolio_metadata(attrs)
