@@ -1,37 +1,20 @@
-# The directory Mix will write compiled artifacts to.
+﻿# Elixir/Phoenix ignored files
 /_build/
-
-# If you run "mix test --cover", coverage assets end up here.
 /cover/
-
-# The directory Mix downloads your dependencies sources to.
 /deps/
-
-# Where 3rd-party dependencies like ExDoc output generated docs.
 /doc/
-
-# Ignore .fetch files in case you like to edit your project deps locally.
 /.fetch
-
-# If the VM crashes, it generates a dump, let's ignore it too.
 erl_crash.dump
-
-# Also ignore archive artifacts (built via "mix archive.build").
 *.ez
-
-# Temporary files, for example, from tests.
 /tmp/
-
-# Ignore package tarball (built via "mix hex.build").
+/.mix_tmp/
 governance_core-*.tar
 
-# Ignore assets that are produced by build tools.
+# Asset build outputs
 /priv/static/assets/
-
-# Ignore digested assets cache.
 /priv/static/cache_manifest.json
 
-# In case you use Node.js/npm, you want to ignore these.
+# Node.js
 npm-debug.log
 /assets/node_modules/
 
@@ -39,3 +22,40 @@ npm-debug.log
 .env
 *.env
 .env.local
+*.env.*
+
+# Secrets and local infrastructure inventories — keep credentials in a vault, not git
+secrets/
+**/secrets/
+*.secret.*
+*.local.yml
+*.local.yaml
+*.local.json
+*.agekey
+*.kdbx
+
+# SQLite local database files
+*.db
+*.db-shm
+*.db-wal
+
+# Log files
+*.log
+
+# Local test & debug scripts (may contain sensitive data)
+interactive_test.exs
+check_jules.exs
+
+# OS/IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Gemini AI brain directory (local only)
+C:/Users/ilker/.gemini/antigravity/brain/*
+
+# KADRO persona images are tracked — they are part of agent profiles in governance_core
+# /priv/static/images/kadro/ <- intentionally NOT ignored

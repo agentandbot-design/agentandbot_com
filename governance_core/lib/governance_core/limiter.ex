@@ -11,7 +11,8 @@ defmodule GovernanceCore.Limiter do
   require Logger
 
   # Default Quotas
-  @cpu_limit_per_minute 100 # requests/ops
+  # requests/ops
+  @cpu_limit_per_minute 100
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -35,6 +36,7 @@ defmodule GovernanceCore.Limiter do
           :ets.insert(:agent_quotas, {agent_id, usage + cost, last_reset})
           :ok
         end
+
       [] ->
         :ets.insert(:agent_quotas, {agent_id, cost, System.system_time(:second)})
         :ok

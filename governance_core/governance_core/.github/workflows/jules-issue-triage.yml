@@ -1,0 +1,73 @@
+name: Jules — Issue Auto-Triage
+# Issue'ya 'jules' label'ı eklenince otomatik Jules session başlatır
+# Jules REST API — jules.googleapis.com/v1alpha
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  trigger-jules:
+    if: github.event.label.name == 'jules'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Create Jules Session
+        id: session
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+
+          PROMPT="GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
+
+          PROJE: Elixir 1.19 / Phoenix 1.7+ / LiveView / Tailwind / Ecto
+          DESIGN: bg #0B0F14, card #121826, accent #3B82F6, font Inter — değiştirme
+          TEST: ExUnit + Mox, mix test geçmeli
+
+          ISSUE AÇIKLAMASI:
+          ${ISSUE_BODY}
+
+          GÖREV: Bu issue'yu implement et. Gerekiyorsa test yaz. PR aç."
+
+          RESPONSE=$(curl -s -X POST \
+            "https://jules.googleapis.com/v1alpha/sessions" \
+            -H "X-Goog-Api-Key: ${{ secrets.JULES_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg title "Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}" \
+              --arg prompt "$PROMPT" \
+              '{
+                title: $title,
+                prompt: $prompt,
+                sourceContext: {
+                  source: "sources/github/agentandbot-design/agentandbot_com",
+                  githubRepoContext: {startingBranch: "main"}
+                },
+                automationMode: "AUTO_CREATE_PR"
+              }')")
+
+          SESSION_ID=$(echo $RESPONSE | jq -r '.id // "unknown"')
+          echo "session_id=$SESSION_ID" >> $GITHUB_OUTPUT
+          echo "Jules session: $SESSION_ID"
+
+      - name: Comment on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sessionId = '${{ steps.session.outputs.session_id }}';
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                '🤖 **Jules** bu issue\'yu incelemeye aldı.',
+                '',
+                `Session ID: \`${sessionId}\``,
+                'Takip: https://jules.google.com',
+                '',
+                '_Agent-triggered · agentandbot platform_'
+              ].join('\n')
+            });

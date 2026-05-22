@@ -14,6 +14,17 @@
 .env
 *.env
 .env.local
+*.env.*
+
+# Secrets and local infrastructure inventories
+secrets/
+**/secrets/
+*.secret.*
+*.local.yml
+*.local.yaml
+*.local.json
+*.agekey
+*.kdbx
 
 # OS/IDE ignored files
 .DS_Store
@@ -22,6 +33,11 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Python runtime caches
+__pycache__/
+**/__pycache__/
+*.pyc
 
 # Project specific ignores
 C:/Users/ilker/.gemini/antigravity/brain/*

@@ -7,6 +7,7 @@ defmodule GovernanceCore.Channels.MarkdownFile do
     # Baseline: Writing task to a shared workspace or node-specific folder
     # In a real swarm, this would sync to the agent's local filesystem.
     filename = "tasks/task_#{agent_id}_#{DateTime.utc_now() |> DateTime.to_unix()}.md"
+
     _content = """
     # Task Assignment (Markdown Fallback)
     - **Agent ID**: #{agent_id}
@@ -20,5 +21,6 @@ defmodule GovernanceCore.Channels.MarkdownFile do
   end
 
   @impl true
-  def status(), do: :online # Markdown baseline is always online
+  # Markdown baseline is always online
+  def status(), do: :online
 end

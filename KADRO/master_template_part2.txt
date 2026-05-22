@@ -1,0 +1,125 @@
+;
+
+let currentCategory = 'all';
+
+function render(data) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = data.map(p => {
+    const initials = p.name.split(' ').map(n => n[0]).join('').slice(0,2);
+    const catClass = 'cat-' + p.category.toLowerCase();
+    const roleText = p.profession || p.title || p.role || '';
+    const locText = (p.city ? p.city + ', ' : '') + (p.country || '');
+    const promptText = (p.prompt || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    
+    // Construct local path safely
+    const vPath = p.vesikalik_path ? p.vesikalik_path : '';
+    const bPath = p.boydan_path ? p.boydan_path : '';
+    
+    return `
+      <div class='card'>
+        <div class='card-header'>
+          <div class='avatar' style='background-image: url("${vPath}"); background-size: cover; background-position: center; border: 1px solid var(--border);'>
+            ${vPath ? "" : initials}
+          </div>
+          <div class='meta'>
+            <div class='p-no'>#${p.p_no} <span class='category-tag ${catClass}'>${p.category}</span></div>
+            <div class='name' style='display:flex; justify-content:space-between; align-items:center;'>
+              <span>${p.flag || ''} ${p.name}</span>
+              <a href="${p.cv_path}" target='_blank' class='copy-btn' style='float:none; text-decoration:none; font-size: 0.65rem; padding: 2px 6px;'>CV</a>
+            </div>
+            <div class='title'>${roleText}</div>
+            <div class='title' style='font-size: 0.75rem; margin-top: 4px;'>${locText} • ${p.age} Yaş • ${p.gender}</div>
+          </div>
+        </div>
+        <div class='body-preview' style='border-top: 1px solid var(--border); height: 180px; overflow:hidden; position:relative; background:var(--bg);'>
+          <img src="${bPath}" style='width:100%; position:absolute; top:-10%; left:0; opacity:0.6; transition: opacity 0.3s;' onmouseover='this.style.opacity=1' onmouseout='this.style.opacity=0.6'>
+          <div style='position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, var(--surface)); height:40px;'></div>
+        </div>
+        <div class='card-body'>
+          <div>
+            <div class='section-title'>Kişilik & Arkaplan</div>
+            <div class='section-text'>${p.personality || p.bg || ''}</div>
+          </div>
+          <div>
+            <div class='section-title'>İçerik Konuları</div>
+            <div class='section-text'>${p.content || ''}</div>
+          </div>
+          <div>
+            <div class='section-title'>Platformlar</div>
+            <div class='pills'>
+              ${(p.social || p.platforms || []).map(s => `<span class='pill'>${s}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class='prompt-section'>
+          <div class='section-title'>
+            Visual Prompt
+            <button class='copy-btn' onclick='copyText("${p.p_no}", "${promptText}")'>Kopyala</button>
+          </div>
+          <div class='prompt-box' id='prompt-${p.p_no}'>${p.prompt || ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function initFilters() {
+  const countries = [...new Set(PERSONAS.map(p => p.country))].sort();
+  const cities = [...new Set(PERSONAS.map(p => p.city).filter(Boolean))].sort();
+  
+  const cSel = document.getElementById('f-country');
+  const tSel = document.getElementById('f-city');
+  
+  countries.forEach(c => cSel.add(new Option(c, c)));
+  cities.forEach(t => tSel.add(new Option(t, t)));
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const country = document.getElementById('f-country').value;
+  const city = document.getElementById('f-city').value;
+  const gender = document.getElementById('f-gender').value;
+  const ageRange = document.getElementById('f-age').value;
+
+  const filtered = PERSONAS.filter(p => {
+    const matchCat = currentCategory === 'all' || p.category === currentCategory;
+    const matchSearch = !q || p.name.toLowerCase().includes(q) || (p.profession && p.profession.toLowerCase().includes(q));
+    const matchCountry = !country || p.country === country;
+    const matchCity = !city || p.city === city;
+    const matchGender = !gender || p.gender === gender;
+    
+    let matchAge = true;
+    if (ageRange === '20-30') matchAge = p.age >= 20 && p.age < 30;
+    else if (ageRange === '30-40') matchAge = p.age >= 30 && p.age < 40;
+    else if (ageRange === '40+') matchAge = p.age >= 40;
+    
+    return matchCat && matchSearch && matchCountry && matchCity && matchGender && matchAge;
+  });
+  render(filtered);
+}
+
+function setCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function copyText(id, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const old = btn.textContent;
+    btn.textContent = 'Kopyalandı!';
+    btn.style.background = 'var(--accent-green)';
+    setTimeout(() => {
+      btn.textContent = old;
+      btn.style.background = '';
+    }, 1500);
+  });
+}
+
+initFilters();
+render(PERSONAS);
+</script>
+</body>
+</html>

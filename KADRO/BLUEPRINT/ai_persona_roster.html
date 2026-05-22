@@ -1,0 +1,250 @@
+
+<style>
+  .roster { padding: 1rem 0; }
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .filter-btn { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: #534AB7; color: #EEEDFE; border-color: #534AB7; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .card-header { padding: 1rem 1.25rem 0.75rem; display: flex; align-items: flex-start; gap: 12px; }
+  .avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; font-weight: 500; }
+  .card-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 2px; }
+  .card-title { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .tag-sap { background: #EEEDFE; color: #3C3489; }
+  .tag-ecom { background: #E1F5EE; color: #085041; }
+  .tag-dev { background: #FAECE7; color: #712B13; }
+  .tag-social { background: #FAEEDA; color: #633806; }
+  .section { padding: 0 1.25rem 0.75rem; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 0.75rem; }
+  .section-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0.6rem 0 0.4rem; }
+  .section-val { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; margin: 0; }
+  .prompt-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; margin-top: 4px; font-family: var(--font-mono); }
+  .copy-btn { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; float: right; margin-top: -2px; }
+  .copy-btn:hover { background: var(--color-background-secondary); }
+  .social-icons { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .social-pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+  .hidden { display: none; }
+</style>
+
+<div class="roster">
+  <h2 class="sr-only">AI Persona Roster - 8 karakter profili</h2>
+  
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filter('all')">Tümü</button>
+    <button class="filter-btn" onclick="filter('sap')">SAP Danışmanlık</button>
+    <button class="filter-btn" onclick="filter('ecom')">E-Ticaret</button>
+    <button class="filter-btn" onclick="filter('dev')">Yazılım</button>
+    <button class="filter-btn" onclick="filter('tr')">Türkiye</button>
+    <button class="filter-btn" onclick="filter('global')">Global</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const personas = [
+  {
+    id: 1,
+    name: "Ayşe Kaya",
+    title: "SAP Senior Consultant & Content Creator",
+    origin: "İstanbul, TR",
+    flag: "🇹🇷",
+    age: 32,
+    initials: "AK",
+    avatarBg: "#534AB7", avatarColor: "#EEEDFE",
+    roles: ["sap", "tr"],
+    companies: ["SAP Danışmanlık — Lead Consultant", "YouTube: SAP Akademi serisinin sunucusu"],
+    personality: "Analitik, güven veren, sade Türkçe konuşan. LinkedIn'de düzenli paylaşım yapar. Mentör kimliği.",
+    social: ["LinkedIn", "YouTube", "Email", "Telegram"],
+    email: "ayse@sapfirma.com",
+    content: "SAP S/4HANA geçiş rehberleri, ERP ipuçları, Türkiye lokalizasyon videoları",
+    prompt: "Professional Turkish woman, 32 years old, dark brown shoulder-length hair, wearing a white button-up shirt, smart blazer in navy blue, sitting at a modern office desk with dual monitors, warm smile, corporate but approachable, natural lighting, photorealistic, 4K portrait"
+  },
+  {
+    id: 2,
+    name: "Mehmet Arslan",
+    title: "SAP FI/CO Specialist & Podcast Host",
+    origin: "Ankara, TR",
+    flag: "🇹🇷",
+    age: 38,
+    initials: "MA",
+    avatarBg: "#185FA5", avatarColor: "#E6F1FB",
+    roles: ["sap", "tr"],
+    companies: ["SAP Danışmanlık — Finance Module Expert", "Podcast: 'ERP Saati'"],
+    personality: "Ciddi, deneyimli, data odaklı. Twitter/X'te sektör yorumları yapar. Otorite sesi.",
+    social: ["LinkedIn", "Twitter/X", "Email", "Podcast"],
+    email: "mehmet@sapfirma.com",
+    content: "SAP FICO vaka analizleri, Türkiye vergi entegrasyonu, CFO röportajları",
+    prompt: "Professional Turkish man, 38 years old, short black hair with slight gray temples, wearing a charcoal suit with open collar, standing in front of a glass office wall, confident posture, glasses, slight stubble, corporate environment, photorealistic, 4K portrait"
+  },
+  {
+    id: 3,
+    name: "Zeynep Demir",
+    title: "E-Commerce Manager & TikTok Creator",
+    origin: "İzmir, TR",
+    flag: "🇹🇷",
+    age: 27,
+    initials: "ZD",
+    avatarBg: "#0F6E56", avatarColor: "#E1F5EE",
+    roles: ["ecom", "tr"],
+    companies: ["E-Ticaret Şirketi — Category Manager", "TikTok & Instagram: Trend & ürün içerikleri"],
+    personality: "Enerjik, trend meraklısı, samimi, genç dili. Hikaye anlatıcısı. Ürün lansmanlarında yüz.",
+    social: ["TikTok", "Instagram", "Email", "YouTube Shorts"],
+    email: "zeynep@ecomfirma.com",
+    content: "Unboxing, trend ürün keşfi, Trendyol/Amazon stratejileri, yaşam tarzı içerikleri",
+    prompt: "Young Turkish woman, 27 years old, long wavy dark hair with subtle highlights, wearing a colorful casual blazer over a white tee, holding a product package, bright studio background with ring light, energetic expression, lifestyle influencer aesthetic, photorealistic, 4K"
+  },
+  {
+    id: 4,
+    name: "Carlos Rivera",
+    title: "E-Commerce Growth Lead & YouTube Host",
+    origin: "Mexico City, MX",
+    flag: "🇲🇽",
+    age: 31,
+    initials: "CR",
+    avatarBg: "#D85A30", avatarColor: "#FAECE7",
+    roles: ["ecom", "global"],
+    companies: ["E-Ticaret Şirketi — LATAM Growth", "YouTube: 'Scale with Carlos' serisi"],
+    personality: "Karizmatik, motivasyonel, veri ile hikayeyi harmanlayan. İngilizce ve İspanyolca içerik.",
+    social: ["YouTube", "Instagram", "LinkedIn", "Email"],
+    email: "carlos@ecomfirma.com",
+    content: "Cross-border e-ticaret, Amazon Global, reklam optimizasyonu, büyüme stratejileri",
+    prompt: "Latin American man, 31 years old, medium-length dark wavy hair, warm olive skin, wearing a casual button-up shirt in light blue, sitting in a modern home office with bookshelves and a ring light, laptop open, confident and friendly expression, photorealistic, 4K portrait"
+  },
+  {
+    id: 5,
+    name: "Selin Yıldız",
+    title: "Full Stack Developer & Tech Blogger",
+    origin: "İstanbul, TR",
+    flag: "🇹🇷",
+    age: 29,
+    initials: "SY",
+    avatarBg: "#993C1D", avatarColor: "#FAECE7",
+    roles: ["dev", "tr"],
+    companies: ["Yazılım Şirketi — Lead Developer", "YouTube & Medium: Türkçe yazılım içerikleri"],
+    personality: "Meraklı, öğretici, açık kaynak tutkunu. GitHub aktif. Kadın yazılımcı topluluğunun sesi.",
+    social: ["GitHub", "YouTube", "Twitter/X", "Email", "Telegram"],
+    email: "selin@yazilimfirma.com",
+    content: "React, Node.js öğreticileri, Türkçe kod review, hackathon deneyimleri",
+    prompt: "Turkish woman software developer, 29 years old, straight black hair in a ponytail, wearing a grey hoodie, sitting at a desk with multiple monitors showing code, casual and intelligent expression, soft desk lamp lighting, developer aesthetic, photorealistic, 4K portrait"
+  },
+  {
+    id: 6,
+    name: "Aiko Tanaka",
+    title: "AI/ML Engineer & YouTube Educator",
+    origin: "Tokyo, JP",
+    flag: "🇯🇵",
+    age: 33,
+    initials: "AT",
+    avatarBg: "#72243E", avatarColor: "#FBEAF0",
+    roles: ["dev", "global"],
+    companies: ["Yazılım Şirketi — AI Lead", "YouTube: 'AI Decoded' serisi (İngilizce)"],
+    personality: "Hassas, detaycı, sabırlı öğretici. Whiteboard anlatımları ile viral içerik üretir.",
+    social: ["YouTube", "LinkedIn", "Email", "Twitter/X"],
+    email: "aiko@yazilimfirma.com",
+    content: "LLM entegrasyonu, Python AI projeleri, model deployment, agent mimarileri",
+    prompt: "Japanese woman, 33 years old, straight dark hair cut just above shoulders, wearing a minimalist white lab coat over a black turtleneck, standing in front of a whiteboard with diagrams, calm and precise expression, clean modern office, photorealistic, 4K portrait"
+  },
+  {
+    id: 7,
+    name: "Lars Eriksson",
+    title: "SAP S/4HANA Architect & Thought Leader",
+    origin: "Stockholm, SE",
+    flag: "🇸🇪",
+    age: 45,
+    initials: "LE",
+    avatarBg: "#3B6D11", avatarColor: "#EAF3DE",
+    roles: ["sap", "global"],
+    companies: ["SAP Danışmanlık — Enterprise Architect", "LinkedIn & Webinar serisi"],
+    personality: "Stratejik düşünür, ölçülü, güvenilir. Büyük şirket C-suite'lerine hitap eder.",
+    social: ["LinkedIn", "Email", "Webinar", "YouTube"],
+    email: "lars@sapfirma.com",
+    content: "SAP rise, cloud dönüşümü, enterprise architecture, CIO rehberleri",
+    prompt: "Scandinavian man, 45 years old, short blonde hair slightly graying, light blue eyes, wearing a well-tailored light gray suit with no tie, standing in a modern glass-walled conference room, calm authoritative expression, natural daylight, photorealistic, 4K portrait"
+  },
+  {
+    id: 8,
+    name: "Priya Sharma",
+    title: "UX/Product Designer & Instagram Creator",
+    origin: "Bangalore, IN",
+    flag: "🇮🇳",
+    age: 28,
+    initials: "PS",
+    avatarBg: "#854F0B", avatarColor: "#FAEEDA",
+    roles: ["dev", "global"],
+    companies: ["Yazılım Şirketi — Head of Design", "Instagram & Behance: design içerikleri"],
+    personality: "Yaratıcı, estetik odaklı, kullanıcı empati uzmanı. Design topluluğunda influencer.",
+    social: ["Instagram", "Behance", "LinkedIn", "Email", "TikTok"],
+    email: "priya@yazilimfirma.com",
+    content: "UI/UX case study'leri, Figma ipuçları, product design süreci, renk & tipografi",
+    prompt: "Indian woman, 28 years old, long dark hair with soft waves, wearing a mustard yellow kurta-style blouse with minimal jewelry, sitting at a creative studio desk with Figma open on screen, warm ambient lighting, design sketchbook visible, expressive and artistic look, photorealistic, 4K portrait"
+  }
+];
+
+function filter(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  const cards = document.querySelectorAll('.persona-card');
+  cards.forEach(c => {
+    const roles = c.dataset.roles.split(',');
+    if (type === 'all' || roles.includes(type)) {
+      c.classList.remove('hidden');
+    } else {
+      c.classList.add('hidden');
+    }
+  });
+}
+
+function copyPrompt(id) {
+  const p = personas.find(x => x.id === id);
+  navigator.clipboard.writeText(p.prompt).then(() => {
+    const btn = document.getElementById('copy-' + id);
+    btn.textContent = 'Kopyalandı!';
+    setTimeout(() => btn.textContent = 'Kopyala', 1500);
+  });
+}
+
+function renderCards() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = personas.map(p => `
+    <div class="card persona-card" data-roles="${p.roles.join(',')}">
+      <div class="card-header">
+        <div class="avatar" style="background:${p.avatarBg};color:${p.avatarColor}">${p.initials}</div>
+        <div style="flex:1">
+          <p class="card-name">${p.flag} ${p.name} <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">(${p.age})</span></p>
+          <p class="card-title">${p.title}</p>
+          <p class="card-title" style="font-size:11px">${p.origin}</p>
+          <div class="tags">
+            ${p.roles.filter(r => ['sap','ecom','dev'].includes(r)).map(r => `<span class="tag tag-${r}">${r==='sap'?'SAP':r==='ecom'?'E-Ticaret':'Yazılım'}</span>`).join('')}
+            <span class="tag" style="background:var(--color-background-secondary);color:var(--color-text-secondary)">${p.roles.includes('tr')?'Türkiye':'Global'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p class="section-label">Şirket Rolleri</p>
+        ${p.companies.map(c => `<p class="section-val" style="margin-bottom:2px">• ${c}</p>`).join('')}
+        
+        <p class="section-label">Kişilik</p>
+        <p class="section-val">${p.personality}</p>
+        
+        <p class="section-label">İçerik Konuları</p>
+        <p class="section-val">${p.content}</p>
+        
+        <p class="section-label">Platformlar & Email</p>
+        <div class="social-icons">
+          ${p.social.map(s => `<span class="social-pill">${s}</span>`).join('')}
+        </div>
+        <p class="section-val" style="margin-top:4px;font-size:12px;color:var(--color-text-secondary)">${p.email}</p>
+        
+        <p class="section-label">Görsel Prompt (Midjourney / DALL-E)</p>
+        <button class="copy-btn" id="copy-${p.id}" onclick="copyPrompt(${p.id})">Kopyala</button>
+        <div class="prompt-box">${p.prompt}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderCards();
+</script>

@@ -7,16 +7,18 @@ defmodule GovernanceCore.Repo.Migrations.RenameAgentsToPersonas do
 
     # 2. Add Unified Swarm fields
     alter table(:personas) do
-      add :sub_type, :string, default: "bot", null: false # bot, human
-      add :access_group, :string, default: "external", null: false # internal, external
+      # bot, human
+      add :sub_type, :string, default: "bot", null: false
+      # internal, external
+      add :access_group, :string, default: "external", null: false
       add :balance_cents, :integer, default: 0, null: false
       add :metadata, :map, default: %{}
     end
 
     # 3. Update indices
-    drop index(:personas, [:type])
-    drop index(:personas, [:owner])
-    
+    drop_if_exists index(:personas, [:type])
+    drop_if_exists index(:personas, [:owner])
+
     create index(:personas, [:sub_type])
     create index(:personas, [:access_group])
     create index(:personas, [:owner])

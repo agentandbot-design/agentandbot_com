@@ -26,6 +26,7 @@ defmodule GovernanceCore.MonitoringTest do
       # Since it pre-pends, second should be first in list
       assert length(comments) >= 2
       assert hd(comments) == comment2
+      assert Enum.member?(comments, comment1)
     end
   end
 end

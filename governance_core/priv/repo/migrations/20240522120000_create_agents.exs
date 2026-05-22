@@ -11,6 +11,10 @@ defmodule GovernanceCore.Repo.Migrations.CreateAgents do
       timestamps()
     end
 
-    create constraint(:agents, :trust_score_range, check: "trust_score >= 0 AND trust_score <= 100")
+    unless repo().__adapter__() == Ecto.Adapters.SQLite3 do
+      create constraint(:agents, :trust_score_range,
+               check: "trust_score >= 0 AND trust_score <= 100"
+             )
+    end
   end
 end

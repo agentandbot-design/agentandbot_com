@@ -7,6 +7,24 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 
+env_path = Path.expand("../.env", __DIR__)
+
+if File.exists?(env_path) do
+  env_path
+  |> File.stream!()
+  |> Stream.map(&String.trim/1)
+  |> Stream.reject(&(&1 == "" or String.starts_with?(&1, "#")))
+  |> Enum.each(fn line ->
+    case String.split(line, "=", parts: 2) do
+      [key, value] ->
+        System.put_env(key, String.trim(value, ~s("')))
+
+      _ ->
+        :ok
+    end
+  end)
+end
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server

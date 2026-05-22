@@ -37,10 +37,11 @@ defmodule GovernanceCore.AXAudit do
     base_url = GovernanceCoreWeb.Endpoint.url()
     endpoints = ["/", "/agents", "/dashboard/traffic"]
 
-    results = Enum.map(endpoints, fn path ->
-      url = base_url <> path
-      check_endpoint(url)
-    end)
+    results =
+      Enum.map(endpoints, fn path ->
+        url = base_url <> path
+        check_endpoint(url)
+      end)
 
     failures = Enum.filter(results, fn {status, _} -> status == :error end)
 
@@ -59,14 +60,16 @@ defmodule GovernanceCore.AXAudit do
         else
           {:error, "Endpoint #{url} is not agent-friendly (missing semantic tags or too complex)"}
         end
+
       {:ok, %{status: status}} ->
         {:error, "Endpoint #{url} returned status #{status}"}
+
       {:error, reason} ->
         {:error, "Failed to fetch #{url}: #{inspect(reason)}"}
     end
   end
 
-  defp is_agent_friendly?(html) do
+  def is_agent_friendly?(html) do
     # Simple heuristic checks for semantic structure
     has_main = String.contains?(html, "<main")
     has_h1 = String.contains?(html, "<h1")

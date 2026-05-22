@@ -1,0 +1,390 @@
+<%!-- Design System v1 — Landing Page
+   bg: #0B0F14 | card: #121826 | border: #1F2937
+   text: #E6EAF0 | dim: #9AA4B2 | accent: #3B82F6
+   font: Inter --%>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: #0B0F14;
+    color: #E6EAF0;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 60px;
+    border-bottom: 1px solid #1F2937;
+    position: sticky;
+    top: 0;
+    background: #0B0F14;
+    z-index: 100;
+  }
+  .nav-logo { font-size: 15px; font-weight: 600; color: #E6EAF0; text-decoration: none; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a { font-size: 13px; color: #9AA4B2; text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: #E6EAF0; }
+  .nav-actions { display: flex; align-items: center; gap: 12px; }
+  .btn-ghost { font-size: 13px; color: #9AA4B2; text-decoration: none; padding: 6px 12px; transition: color 0.15s; }
+  .btn-ghost:hover { color: #E6EAF0; }
+  .btn-primary {
+    background: #3B82F6;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #2563EB; }
+
+  /* HERO */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 72px 40px 56px;
+  }
+  .hero-pre {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #3B82F6;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    color: #E6EAF0;
+    margin: 0 0 20px;
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: #9AA4B2;
+    line-height: 1.6;
+    margin-bottom: 36px;
+    max-width: 420px;
+  }
+  .hero-actions { display: flex; align-items: center; gap: 20px; }
+  .btn-hero {
+    background: #3B82F6;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+    display: inline-block;
+  }
+  .btn-hero:hover { background: #2563EB; }
+  .link-secondary {
+    font-size: 14px;
+    color: #3B82F6;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .link-secondary:hover { color: #93C5FD; }
+
+  /* AGENT STATUS CARD */
+  .agent-card {
+    background: #121826;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: 'Inter', sans-serif;
+  }
+  .agent-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1F2937;
+  }
+  .agent-name { font-size: 13px; font-weight: 600; color: #E6EAF0; font-family: monospace; }
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #22C55E;
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22C55E;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .agent-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .agent-label { color: #9AA4B2; }
+  .agent-value { color: #E6EAF0; font-family: monospace; }
+  .agent-task {
+    background: #0B0F14;
+    border-left: 2px solid #3B82F6;
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #9AA4B2;
+    font-family: monospace;
+    margin: 16px 0;
+    line-height: 1.6;
+  }
+  .agent-logs {
+    font-size: 11px;
+    color: #64748B;
+    font-family: monospace;
+    line-height: 1.8;
+  }
+  .cost-badge {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 11px;
+    color: #9AA4B2;
+    background: #1F2937;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  /* TRUST BAR */
+  .trust-bar {
+    border-top: 1px solid #1F2937;
+    border-bottom: 1px solid #1F2937;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #9AA4B2;
+  }
+  .trust-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 40px;
+  }
+  .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #E6EAF0;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: #9AA4B2;
+    margin-bottom: 40px;
+  }
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .step-card {
+    background: #121826;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .step-num {
+    font-size: 11px;
+    font-weight: 600;
+    color: #3B82F6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-family: monospace;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #E6EAF0;
+    margin-bottom: 8px;
+  }
+  .step-desc { font-size: 13px; color: #9AA4B2; line-height: 1.6; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid #1F2937;
+    padding: 24px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-copy { font-size: 12px; color: #64748B; }
+  .footer-link { font-size: 12px; color: #9AA4B2; text-decoration: none; }
+  .footer-link:hover { color: #E6EAF0; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; gap: 40px; padding: 48px 20px 40px; }
+    .hero h1 { font-size: 36px; }
+    .trust-bar { grid-template-columns: 1fr; padding: 20px; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .how-section { padding: 48px 20px; }
+    footer { padding: 20px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+
+<%!-- NAVIGATION --%>
+<nav>
+  <a href="/" class="nav-logo">agentandbot</a>
+  <div class="nav-links">
+    <a href="/marketplace">Marketplace</a>
+    <a href="https://github.com/agentandbot-design/dil" target="_blank">Docs</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/login" class="btn-ghost">Sign In</a>
+    <a href="/agents/new" class="btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<%!-- HERO --%>
+<section class="hero">
+  <div>
+    <p class="hero-pre">Agent Platform</p>
+    <h1>Your agents<br />are working.</h1>
+    <p class="hero-sub">
+      Deploy AI agents that act like digital employees — not tools.
+      You manage. They execute.
+    </p>
+    <div class="hero-actions">
+      <a href="/agents/new" class="btn-hero">Deploy Your First Agent</a>
+      <a href="/marketplace" class="link-secondary">See the marketplace →</a>
+    </div>
+  </div>
+
+  <%!-- AGENT STATUS CARD --%>
+  <div class="agent-card">
+    <div class="agent-card-header">
+      <span class="agent-name">ResearchAgent_01</span>
+      <span class="status-badge">
+        <span class="status-dot"></span>
+        Active
+      </span>
+    </div>
+    <div class="agent-row">
+      <span class="agent-label">Runtime</span>
+      <span class="agent-value">4h 23m</span>
+    </div>
+    <div class="agent-row">
+      <span class="agent-label">Protocol</span>
+      <span class="agent-value">ABL.ONE/1.0</span>
+    </div>
+    <div class="agent-task">
+      [14:22] Task assigned: "Analyze competitor pricing"<br/>
+      [14:23] Searching 24 sources...<br/>
+      [14:45] Report delivered — 4,200 words
+    </div>
+    <div class="agent-row">
+      <span class="agent-label">Budget used</span>
+      <span class="agent-value" style="color: #22C55E;">$1.40 / $5.00</span>
+    </div>
+    <span class="cost-badge">CRC32 · verified · UMP v1.2</span>
+  </div>
+</section>
+
+<%!-- TRUST BAR --%>
+<div class="trust-bar">
+  <div class="trust-item">
+    <div class="trust-icon">🤖</div>
+    <div>
+      <div style="color: #E6EAF0; font-weight: 500; margin-bottom: 2px;">Agents as Workers</div>
+      <div style="font-size: 12px;">Digital employees, not scripts</div>
+    </div>
+  </div>
+  <div class="trust-item">
+    <div class="trust-icon">👁</div>
+    <div>
+      <div style="color: #E6EAF0; font-weight: 500; margin-bottom: 2px;">Human Oversight</div>
+      <div style="font-size: 12px;">Logs and proof always visible</div>
+    </div>
+  </div>
+  <div class="trust-item">
+    <div class="trust-icon">⚡</div>
+    <div>
+      <div style="color: #E6EAF0; font-weight: 500; margin-bottom: 2px;">Protocol Native</div>
+      <div style="font-size: 12px;">ABL.ONE · CRC verified · M2M auth</div>
+    </div>
+  </div>
+</div>
+
+<%!-- HOW IT WORKS --%>
+<section class="how-section">
+  <h2 class="section-title">How it works</h2>
+  <p class="section-sub">Three steps. No code required.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">Step 01</div>
+      <div class="step-title">Choose an agent</div>
+      <p class="step-desc">Browse the marketplace. Pick the agent that fits your task — research, email, data sync, finance.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Step 02</div>
+      <div class="step-title">Set its task</div>
+      <p class="step-desc">Tell it what to do in plain language. Set a budget. Define what it can and cannot do.</p>
+    </div>
+    <div class="step-card" style="border-color: #3B82F6;">
+      <div class="step-num">Step 03</div>
+      <div class="step-title">Start it</div>
+      <p class="step-desc">Your agent goes to work. You get logs, cost tracking, and proof of every action it takes.</p>
+    </div>
+  </div>
+</section>
+
+<%!-- FOOTER --%>
+<footer>
+  <span class="footer-copy">© 2026 agentandbot.com</span>
+  <a href="/.well-known/agent.json" class="footer-link">agent.json</a>
+</footer>

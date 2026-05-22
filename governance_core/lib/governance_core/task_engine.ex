@@ -12,7 +12,10 @@ defmodule GovernanceCore.TaskEngine do
     agent = Agents.get_agent!(agent_id)
 
     if agent.trust_score < @human_handoff_threshold do
-      Logger.warning("Agent #{agent.id} karma (#{agent.trust_score}) below threshold. Falling back to Human/Manual Handoff.")
+      Logger.warning(
+        "Agent #{agent.id} karma (#{agent.trust_score}) below threshold. Falling back to Human/Manual Handoff."
+      )
+
       {:error, :human_handoff}
     else
       channel = Agents.get_best_channel(agent)
@@ -24,19 +27,25 @@ defmodule GovernanceCore.TaskEngine do
   def verify_result(agent_id, is_valid) do
     agent = Agents.get_agent!(agent_id)
 
-    new_score = if is_valid do
-      min(agent.trust_score + 1, 100)
-    else
-      max(agent.trust_score - 10, 0)
-    end
+    new_score =
+      if is_valid do
+        min(agent.trust_score + 1, 100)
+      else
+        max(agent.trust_score - 10, 0)
+      end
 
     case Agents.update_agent(agent, %{trust_score: new_score}) do
       {:ok, updated_agent} ->
         if updated_agent.trust_score < @human_handoff_threshold do
-           Logger.alert("Agent #{agent.id} trust score dropped below critical level! Monitoring required.")
+          Logger.alert(
+            "Agent #{agent.id} trust score dropped below critical level! Monitoring required."
+          )
         end
+
         {:ok, updated_agent}
-      error -> error
+
+      error ->
+        error
     end
   end
 end

@@ -11,6 +11,8 @@ config :governance_core,
   ecto_repos: [GovernanceCore.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :governance_core, :repo_adapter, Ecto.Adapters.SQLite3
+
 # Configure the endpoint
 config :governance_core, GovernanceCoreWeb.Endpoint,
   url: [host: "localhost"],

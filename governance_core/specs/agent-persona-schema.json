@@ -1,0 +1,197 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Agentandbot Advanced Agent Persona Schema",
+    "description": "Standardized JSON-LD schema combining Schema.org, OpenClaw, Moltbook Identity, Google AP2, and Swarm Orchestration architectures.",
+    "type": "object",
+    "properties": {
+        "@context": {
+            "type": "string",
+            "const": "https://schema.org"
+        },
+        "@type": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "e.g., ['Person', 'SoftwareApplication']"
+        },
+        "name": {
+            "type": "string",
+            "description": "Unique UUID for the agent (Moltbook ID) or raw name"
+        },
+        "alternateName": {
+            "type": "string",
+            "description": "Human readable name of the agent"
+        },
+        "gender": {
+            "type": "string",
+            "description": "Gender identity (e.g., 'AI', 'Robot', 'Non-binary', 'Male', 'Female')"
+        },
+        "parent": {
+            "type": "object",
+            "properties": {
+                "@type": {
+                    "type": "string",
+                    "const": "Person"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The human owner of this agent"
+                }
+            },
+            "description": "Human ownership link required by Moltbook Identity"
+        },
+        "knowsAbout": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of validated skills or knowledge domains (from Skill.md)"
+        },
+        "interest": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Things the agent is optimized for or likes"
+        },
+        "applicationCategory": {
+            "type": "string",
+            "description": "e.g., 'BusinessApplication', 'SocialBot'"
+        },
+        "additionalProperty": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "@type": {
+                        "type": "string",
+                        "const": "PropertyValue"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "object",
+                            "array"
+                        ]
+                    }
+                }
+            },
+            "description": "Custom Moltbook traits like Karma, Personality_Trait, Dislikes"
+        },
+        "agent_core_config": {
+            "type": "object",
+            "description": "Operational config for CTOs/Managers",
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "token_limit": {
+                    "type": "number"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "AuthGuardian / Permission Wall access lists"
+                },
+                "authentication": {
+                    "type": "object",
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "OAuth2.1",
+                                "A2A",
+                                "A2SPA",
+                                "MCP"
+                            ]
+                        },
+                        "client_id": {
+                            "type": "string"
+                        },
+                        "delegation_type": {
+                            "type": "string",
+                            "enum": [
+                                "Passkey",
+                                "JIT"
+                            ]
+                        }
+                    },
+                    "description": "Login/Auth protocols for autonomous systems based on OpenClaw/MoltBot standards."
+                },
+                "payments": {
+                    "type": "object",
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "Google_AP2",
+                                "x402",
+                                "Agentic_Token",
+                                "Crypto_Wallet"
+                            ]
+                        },
+                        "wallet_address": {
+                            "type": "string"
+                        },
+                        "spending_limit_usd": {
+                            "type": "number",
+                            "description": "Hard limit on total API cost or micro-payments this agent can spend before Manager approval"
+                        },
+                        "mandate_type": {
+                            "type": "string",
+                            "enum": [
+                                "Intent_Mandate",
+                                "Cart_Mandate"
+                            ]
+                        }
+                    },
+                    "description": "Financial transaction standards (Google AP2, OpenClaw virtual cards)."
+                },
+                "swarm_orchestration": {
+                    "type": "object",
+                    "properties": {
+                        "swarm_role": {
+                            "type": "string",
+                            "enum": [
+                                "Orchestrator",
+                                "Worker",
+                                "Coordinator"
+                            ]
+                        },
+                        "blackboard_id": {
+                            "type": "string",
+                            "description": "Shared memory/context graph ID for the swarm"
+                        },
+                        "sub_agents": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "List of Moltbook IDs this agent can delegate tasks to"
+                        },
+                        "open_access_fallback": {
+                            "type": "boolean",
+                            "description": "If true, low confidence tasks are routed to the Open Access Layer for human completion (micro-tasks)"
+                        }
+                    },
+                    "description": "Swarm and group formation settings inspired by Agent-Zero and OpenClaw."
+                }
+            }
+        }
+    },
+    "required": [
+        "@context",
+        "@type",
+        "name",
+        "parent",
+        "agent_core_config"
+    ]
+}

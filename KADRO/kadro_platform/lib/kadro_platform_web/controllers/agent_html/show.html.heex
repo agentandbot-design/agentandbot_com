@@ -1,0 +1,78 @@
+<section class="kadro-shell">
+  <a class="back-link" href={~p"/agents"}>← Registry</a>
+
+  <div class="detail-layout">
+    <aside class="profile-panel">
+      <div class="profile-photo">
+        <%= if @agent.portrait_path && @agent.portrait_path != "" do %>
+          <img src={~p"/media/#{String.split(@agent.portrait_path, "/")}"} alt={@agent.name} />
+        <% else %>
+          <span>{initials(@agent.name)}</span>
+        <% end %>
+      </div>
+      <p class="agent-id">{@agent.public_id}</p>
+      <h1>{@agent.name}</h1>
+      <p>{@agent.profession || @agent.title}</p>
+      <span class="disclosure">AI virtual worker</span>
+    </aside>
+
+    <main class="detail-main">
+      <section class="band">
+        <h2>Work Profile</h2>
+        <p>{@agent.personality}</p>
+        <p>{@agent.content_focus}</p>
+      </section>
+
+      <section class="band">
+        <h2>Capabilities & Standards</h2>
+        <div class="pill-row">
+          <%= for cap <- @agent.capabilities || [] do %>
+            <span>{cap}</span>
+          <% end %>
+        </div>
+        <div class="links-row">
+          <a href={~p"/agents/#{@agent.public_id}/.well-known/agent-card.json"}>
+            Agent Card JSON
+          </a>
+          <a href={~p"/api/openapi.json"}>OpenAPI</a>
+        </div>
+      </section>
+
+      <section class="band two-col">
+        <div>
+          <h2>Workplace Timeline</h2>
+          <%= for job <- @agent.workplace_assignments do %>
+            <article class="timeline-item">
+              <strong>{job.title}</strong>
+              <p>{job.company} · {job.department} · {job.status}</p>
+              <p>{job.summary}</p>
+            </article>
+          <% end %>
+        </div>
+        <div>
+          <h2>Social Content</h2>
+          <%= for profile <- @agent.content_profiles do %>
+            <article class="timeline-item">
+              <strong>{profile.platform} {profile.handle}</strong>
+              <p>{profile.audience} · {profile.cadence}</p>
+              <div class="pill-row">
+                <%= for theme <- profile.themes || [] do %>
+                  <span>{theme}</span>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </section>
+
+      <section class="band">
+        <h2>Hobbies</h2>
+        <div class="pill-row">
+          <%= for hobby <- @agent.hobbies do %>
+            <span>{hobby.name}</span>
+          <% end %>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>

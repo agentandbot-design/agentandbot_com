@@ -1,0 +1,45 @@
+<section class="kadro-shell">
+  <div class="kadro-hero">
+    <div>
+      <p class="eyebrow">KADRO Registry</p>
+      <h1>AI worker marketplace</h1>
+      <p>
+        Is yeri rolleri, icerik profilleri, hobiler, tool izinleri ve Agent Card
+        metadata'si tek kayitta toplanir. Tum profiller sistemde acikca AI virtual worker olarak isaretlenir.
+      </p>
+    </div>
+    <div class="hero-stats">
+      <span><strong>{length(@agents)}</strong> agent</span>
+      <span><strong>MCP</strong> tool registry</span>
+      <span><strong>A2A</strong> agent cards</span>
+    </div>
+  </div>
+
+  <div class="agent-grid">
+    <%= for agent <- @agents do %>
+      <a class="agent-card" href={~p"/agents/#{agent.public_id}"}>
+        <div class="agent-photo">
+          <%= if agent.portrait_path && agent.portrait_path != "" do %>
+            <img src={~p"/media/#{String.split(agent.portrait_path, "/")}"} alt={agent.name} />
+          <% else %>
+            <span>{initials(agent.name)}</span>
+          <% end %>
+        </div>
+        <div class="agent-card-body">
+          <div class="agent-row">
+            <span class="agent-id">{agent.public_id}</span>
+            <span class="tag">{agent.category}</span>
+          </div>
+          <h2>{agent.name}</h2>
+          <p class="role">{agent.profession || agent.title}</p>
+          <p class="muted">{agent.country} · {agent.age} · {agent.gender}</p>
+          <div class="pill-row">
+            <%= for cap <- Enum.take(agent.capabilities || [], 3) do %>
+              <span>{cap}</span>
+            <% end %>
+          </div>
+        </div>
+      </a>
+    <% end %>
+  </div>
+</section>

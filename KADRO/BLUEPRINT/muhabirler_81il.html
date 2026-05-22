@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🇹🇷 Türkiye Yerel Muhabirler — 81 İl</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E30A17;
+    --red-dim: rgba(227,10,23,0.12);
+    --red-glow: rgba(227,10,23,0.25);
+    --bg: #0D0D0F;
+    --surface: #16161A;
+    --surface2: #1E1E24;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(227,10,23,0.35);
+    --text: #F0EFEB;
+    --muted: #7A7A85;
+    --accent: #E30A17;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(227,10,23,0.15), transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-title h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .header-title h1 span { color: var(--red); }
+  .header-title p {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .header-stats {
+    display: flex;
+    gap: 32px;
+  }
+  .stat {
+    text-align: right;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--red);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    max-width: 1400px;
+    margin: 32px auto 0;
+    padding: 0 48px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 14px 11px 40px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--red); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--red-dim);
+    border-color: var(--red);
+    color: var(--text);
+  }
+
+  /* GRID */
+  .grid {
+    max-width: 1400px;
+    margin: 32px auto 60px;
+    padding: 0 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(227,10,23,0.1);
+  }
+  .card-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    font-weight: 700;
+    position: relative;
+  }
+  .avatar::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    opacity: 0.5;
+  }
+  .card-meta { flex: 1; min-width: 0; }
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .card-age-badge {
+    display: inline-block;
+    background: var(--red-dim);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .card-title {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .card-city {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-body {
+    padding: 16px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .personality-text {
+    font-size: 13px;
+    color: #BEBEBE;
+    line-height: 1.55;
+  }
+
+  .topics-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .topic-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: #BEBEBE;
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .platforms {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .platform-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+
+  .email-row {
+    font-size: 12px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  .email-row a { color: var(--muted); text-decoration: none; }
+  .email-row a:hover { color: var(--red); }
+
+  /* PROMPT SECTION */
+  .prompt-section {
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.2);
+  }
+  .prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .prompt-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .copy-btn:hover {
+    background: var(--red-dim);
+    border-color: var(--red);
+    color: var(--text);
+  }
+  .copy-btn.copied {
+    background: rgba(40,200,100,0.12);
+    border-color: rgba(40,200,100,0.4);
+    color: #40C864;
+  }
+  .prompt-text {
+    font-size: 11.5px;
+    color: #858590;
+    line-height: 1.6;
+    font-style: italic;
+    max-height: 80px;
+    overflow: hidden;
+    transition: max-height 0.3s;
+    cursor: pointer;
+  }
+  .prompt-text.expanded { max-height: 300px; }
+  .prompt-text:hover { color: #AAAAB0; }
+
+  /* NO RESULTS */
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    header { padding: 24px 20px; }
+    .controls { padding: 0 20px; }
+    .grid { padding: 0 20px; grid-template-columns: 1fr; }
+    .header-stats { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <h1>🇹🇷 Türkiye <span>Yerel Muhabirler</span></h1>
+      <p>81 İl · Yapay Zeka Görsel Prompt Kataloğu</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-num">81</div>
+        <div class="stat-label">Karakter</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">18–50</div>
+        <div class="stat-label">Yaş Aralığı</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="controls" id="controls">
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="search" placeholder="İsim, şehir veya konu ara…" oninput="filterCards()">
+  </div>
+  <button class="filter-btn active" onclick="setGender('all', this)">Tümü</button>
+  <button class="filter-btn" onclick="setGender('female', this)">👩 Kadın</button>
+  <button class="filter-btn" onclick="setGender('male', this)">👨 Erkek</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const CHARS = [
+  {city:"Adana",name:"Leyla Çelik",age:28,gender:"female",title:"Tarım & Sanayi Muhabiri",region:"Çukurova",personality:"Enerjik, saha odaklı, hızlı anlatan. Instagram'da günlük belgesel paylaşımları yapar. Çiftçilerle ve fabrika işçileriyle aynı dili konuşur.",topics:["Portakal & narenciye hasadı","Çukurova sanayi girişimleri","Tarımda genç girişimciler"],platforms:["Instagram","YouTube","TikTok"],email:"leyla@habertr.com",prompt:"Professional Turkish woman, 28 years old, warm olive skin, long dark brown wavy hair, wearing a casual olive-green jacket over a white shirt, standing in a vibrant orange grove in Çukurova, holding a small notepad, confident natural smile, golden hour lighting, photorealistic, 4K portrait"},
+  {city:"Adıyaman",name:"Ahmet Yıldırım",age:35,gender:"male",title:"Arkeoloji & Kültür Muhabiri",region:"Güneydoğu Anadolu",personality:"Meraklı, akademik ama erişilebilir. Nemrut'u anlatan podcast yayınıyla bilinir. Tarihsel detaylara takıntılı.",topics:["Nemrut Dağı turizmi","Kommagene tarihi","Deprem sonrası kültürel miras"],platforms:["Podcast","Twitter/X","YouTube"],email:"ahmet@habertr.com",prompt:"Professional Turkish man, 35 years old, short black hair, neatly trimmed beard, wearing a khaki field jacket, standing near ancient stone statues on a mountaintop, contemplative expression, dramatic cloudy sky background, natural rugged lighting, photorealistic, 4K portrait"},
+  {city:"Afyonkarahisar",name:"Fatma Demir",age:42,gender:"female",title:"Gastronomi & Termal Turizm Muhabiri",region:"İç Ege",personality:"Sıcak, geleneksel, güleryüzlü. Afyon kaymağı ve sucuğunu dünyaya tanıtmaya adanmış. Yemek bloggerı olarak tanınır.",topics:["Afyon mutfağı & kaymak kültürü","Termal tesisler","Haşhaş tarımı"],platforms:["Blog","Instagram","YouTube"],email:"fatma@habertr.com",prompt:"Professional Turkish woman, 42 years old, dark chestnut hair in a bun, wearing a traditional embroidered apron over a burgundy blouse, standing in a rustic kitchen with traditional Turkish pottery visible, warm inviting smile, soft indoor lighting, photorealistic, 4K portrait"},
+  {city:"Ağrı",name:"Serdar Koç",age:29,gender:"male",title:"Doğa & Sınır Coğrafyası Muhabiri",region:"Doğu Anadolu",personality:"Maceraperest, kısa cümleli, gerçekçi. Ağrı Dağı'nı 3 kez tırmanmış. Sınır halkını sessiz belgeler.",topics:["Ağrı Dağı tırmanışları","Doğu sınır bölgesi yaşamı","Göçer kültürü"],platforms:["Instagram","YouTube","Telegram"],email:"serdar@habertr.com",prompt:"Professional Turkish man, 29 years old, short dark hair, light stubble, wearing a weathered outdoor fleece jacket, standing at high altitude with Mount Ararat visible in the background, serious determined expression, cold blue-grey mountain light, photorealistic, 4K portrait"},
+  {city:"Amasya",name:"Elif Arslan",age:24,gender:"female",title:"Tarihi Miras & Mimari Muhabiri",region:"Karadeniz",personality:"Romantik bakışlı, şiirsel anlatıcı. Osmanlı şehzade tarihi üzerine içerik üretir. Instagram reelları çok izlenir.",topics:["Osmanlı şehzade tarihi","Yeşilırmak kıyı mimarisi","Kaya mezarları"],platforms:["Instagram","TikTok","Substack"],email:"elif@habertr.com",prompt:"Professional Turkish woman, 24 years old, long dark hair flowing over shoulders, wearing a rust-orange midi dress, standing on a bridge over a calm river with traditional Ottoman wooden houses in the background, dreamy soft expression, golden dusk light, photorealistic, 4K portrait"},
+  {city:"Ankara",name:"Burak Şahin",age:44,gender:"male",title:"Siyaset & Ekonomi Muhabiri",region:"İç Anadolu",personality:"Ciddi, ölçülü, keskin analizler. CNN Türk tarzı yayın yapıyor. Bakanlık basın toplantılarının sabırsız takipçisi.",topics:["Meclis haberleri","Ekonomi politikaları","Bürokratik reform"],platforms:["Twitter/X","LinkedIn","Podcast"],email:"burak@habertr.com",prompt:"Professional Turkish man, 44 years old, salt-and-pepper short hair, black-rimmed glasses, wearing a dark navy suit with a subtle striped tie, standing in front of the Turkish Grand National Assembly building, authoritative composed expression, overcast daylight, photorealistic, 4K portrait"},
+  {city:"Antalya",name:"Selin Kaya",age:26,gender:"female",title:"Turizm & Yaşam Muhabiri",region:"Akdeniz",personality:"Renkli, dışa dönük, iyi İngilizce konuşur. Yabancı turistlerle röportaj yapar. Sahil yaşamını sosyal medyada belgeler.",topics:["Turizm sezonu haberleri","Akdeniz mutfağı","Dijital göçmen yaşamı"],platforms:["Instagram","TikTok","YouTube"],email:"selin@habertr.com",prompt:"Professional Turkish woman, 26 years old, sun-kissed skin, light chestnut hair in loose waves, wearing a white linen blouse, standing near a turquoise Mediterranean seafront with ancient ruins visible, bright natural smile, brilliant afternoon sunlight, photorealistic, 4K portrait"},
+  {city:"Artvin",name:"Murat Öztürk",age:38,gender:"male",title:"Doğa & Çevre Muhabiri",region:"Kuzeydoğu Karadeniz",personality:"Sessiz, gözlemci, çevreci. Kaçkar dağlarını yurt edinmiş. Doğa fotoğrafçılığını habercilikle birleştiriyor.",topics:["Kaçkar Dağları","Çoruh Nehri rafting","HES karşıtı çevre hareketleri"],platforms:["Instagram","YouTube","NGO Blog"],email:"murat@habertr.com",prompt:"Professional Turkish man, 38 years old, slightly tanned skin, medium-length brown hair, light beard, wearing a technical hiking shirt and vest, standing in a lush green Kaçkar Mountains valley with a river visible, calm serious expression, soft diffused forest light, photorealistic, 4K portrait"},
+  {city:"Aydın",name:"Hande Yılmaz",age:31,gender:"female",title:"Tarım & Ege Kültürü Muhabiri",region:"Ege",personality:"Güneşli, açık fikirli, feminist bakışlı. İncir ve zeytin üreticilerini öne çıkarır. Ege köy yaşamını romantize etmeden anlatır.",topics:["İncir & pamuk tarımı","Ege kadın kooperatifleri","Didim - Kuşadası turizm ekonomisi"],platforms:["Instagram","Substack","Podcast"],email:"hande@habertr.com",prompt:"Professional Turkish woman, 31 years old, shoulder-length auburn hair, wearing a floral patterned linen shirt, standing in a sunlit fig orchard with ripe figs visible, relaxed confident posture, warm summer light filtering through leaves, photorealistic, 4K portrait"},
+  {city:"Balıkesir",name:"Emre Çetin",age:36,gender:"male",title:"Sanayi & Enerji Muhabiri",region:"Marmara-Ege",personality:"Pratik, araştırmacı, veri sever. Rüzgar enerjisi ve zeytinlik tartışmalarını takip eder. LinkedIn'de aktif.",topics:["Rüzgar enerjisi yatırımları","Balıkesir OSB haberleri","Marmara - Ege ulaşım projeleri"],platforms:["LinkedIn","Twitter/X","Podcast"],email:"emre@habertr.com",prompt:"Professional Turkish man, 36 years old, short dark hair, clean-shaved, wearing a business casual blue shirt with rolled sleeves, standing near a wind turbine field at golden hour, focused analytical expression, warm amber light, photorealistic, 4K portrait"},
+  {city:"Bilecik",name:"Zeynep Korkmaz",age:22,gender:"female",title:"Genç Girişim & Tekstil Muhabiri",region:"Marmara",personality:"Hızlı öğrenen, Z kuşağı sesi, taze perspektif. Üniversiteden yeni mezun. TikTok'ta sanayi videolarıyla dikkat çekiyor.",topics:["Bilecik tekstil kümelenmesi","Genç girişimci hikayeleri","Osmanlı ilk başkenti tarihçesi"],platforms:["TikTok","Instagram","LinkedIn"],email:"zeynep@habertr.com",prompt:"Young professional Turkish woman, 22 years old, straight black hair with light highlights, wearing a trendy oversized blazer in dusty pink over a black top, standing in a modern co-working space with industrial windows, enthusiastic bright expression, natural diffused light, photorealistic, 4K portrait"},
+  {city:"Bingöl",name:"Hasan Doğan",age:40,gender:"male",title:"Arıcılık & Doğa Muhabiri",region:"Doğu Anadolu",personality:"Sakin, toprağa bağlı, derin anlatan. Bingöl balının hikayesini dünyaya taşımak istiyor. Yerelin sesi.",topics:["Bingöl dağ balı & arıcılık","Doğu Anadolu köy yaşamı","Deprem sonrası yeniden yapılanma"],platforms:["YouTube","Instagram","Radyo"],email:"hasan@habertr.com",prompt:"Professional Turkish man, 40 years old, dark complexion, thick black hair with slight gray, short beard, wearing a beekeeping veil pushed back on head and a casual work shirt, standing in a wildflower meadow with beehives in background, warm gentle expression, soft morning light, photorealistic, 4K portrait"},
+  {city:"Bitlis",name:"Nuray Polat",age:33,gender:"female",title:"Kültürel Miras & Sivil Toplum Muhabiri",region:"Doğu Anadolu",personality:"Empati kurucusu, derin araştırmacı, inatla iyimser. Kürt ve Ermeni kültürel mirasını barış diliyle anlatır.",topics:["Nemrut gölü doğal güzellikleri","Çok-kültürlü miras haberleri","Kadın sivil toplum projeleri"],platforms:["Substack","Twitter/X","Podcast"],email:"nuray@habertr.com",prompt:"Professional Turkish woman, 33 years old, dark wavy hair, expressive brown eyes, wearing a deep teal blouse with a simple necklace, sitting at an outdoor café table with historical stone buildings in background, thoughtful warm expression, soft afternoon light, photorealistic, 4K portrait"},
+  {city:"Bolu",name:"Can Aydın",age:27,gender:"male",title:"Gastronomi & Turizm Muhabiri",region:"Batı Karadeniz",personality:"Neşeli, yemek tutkunu, hikaye anlatıcısı. Bolu aşçılık okulunu haberleştiriyor. 'Türkiye'nin mutfak başkenti' diyerek gönüllü elçilik yapıyor.",topics:["Bolu gastronomi kültürü","Abant & Yedigöller doğa haberleri","Aşçılık okulu mezunları"],platforms:["YouTube","Instagram","Blog"],email:"can@habertr.com",prompt:"Professional Turkish man, 27 years old, curly dark brown hair, cheerful round face, wearing a white chef's apron over a casual flannel shirt, standing in a rustic mountain restaurant kitchen with copper pots visible, big warm smile, warm kitchen lighting, photorealistic, 4K portrait"},
+  {city:"Burdur",name:"Merve Güneş",age:30,gender:"female",title:"Doğa & Göl Ekosistemi Muhabiri",region:"Göller Yöresi",personality:"Sakin, bilimsel bakan, çevre savunucusu. Salda Gölü'nün korunması için içerik üreten aktivist muhabir.",topics:["Salda Gölü & Burdur Gölü ekosistemi","Çevre koruma kampanyaları","Lavanta turizminin kırsal etkisi"],platforms:["Instagram","YouTube","NGO Blog"],email:"merve@habertr.com",prompt:"Professional Turkish woman, 30 years old, medium-length brown hair, minimal makeup, wearing a light blue linen shirt, standing at the edge of a stunning white sandy shore of a turquoise lake, serene contemplative expression, bright midday light, photorealistic, 4K portrait"},
+  {city:"Bursa",name:"Tolga Ercan",age:39,gender:"male",title:"Sanayi & Otomotiv Muhabiri",region:"Marmara",personality:"Güçlü, mekanik zihne sahip, net konuşur. Otomotiv fabrikalarını takip eden önde gelen sanayi habercisi. LinkedIn'de 50K+ takipçi.",topics:["TOGG & Türk otomotiv sanayi","Bursa OSB yatırımları","Yeşil Bursa - ipek yolu mirası"],platforms:["LinkedIn","Podcast","YouTube"],email:"tolga@habertr.com",prompt:"Professional Turkish man, 39 years old, short dark hair, light stubble, wearing a smart dark grey jacket over a white shirt, standing in front of a modern automotive factory with Turkish electric vehicles in background, confident strong posture, industrial daylight, photorealistic, 4K portrait"},
+  {city:"Çanakkale",name:"İpek Akman",age:25,gender:"female",title:"Tarih & Çanakkale Ruhu Muhabiri",region:"Marmara-Ege",personality:"Vatansever ama eleştirel, söylem yerine belge sever. 18 Mart törenlerini en iyi anlatan genç muhabir.",topics:["Gelibolu tarihi & anma törenleri","Troya arkeolojisi","Çanakkale Boğazı deniz trafiği"],platforms:["Twitter/X","YouTube","Podcast"],email:"ipek@habertr.com",prompt:"Professional Turkish woman, 25 years old, shoulder-length straight black hair, wearing a dark olive military-style jacket over a simple white shirt, standing at Gallipoli memorial site with memorial monuments in background, solemn respectful expression, overcast emotional lighting, photorealistic, 4K portrait"},
+  {city:"Çankırı",name:"Recep Uzun",age:46,gender:"male",title:"Tarım & Kaya Tuzu Muhabiri",region:"İç Anadolu",personality:"Köklü, sabırlı, yerelden bakışlı. Çankırı tuz madenlerini ve kaya tuzu turizmini anlatan tek muhabir.",topics:["Kaya tuzu madenleri & turizmi","Orta Anadolu tarım politikaları","Küçük şehir demografisi"],platforms:["Radyo","Twitter/X","Blog"],email:"recep@habertr.com",prompt:"Professional Turkish man, 46 years old, greying short hair, weathered skin, reading glasses around neck, wearing a practical vest over a checked flannel shirt, standing at the entrance of a salt cave with crystalline walls glowing, calm knowledgeable expression, warm amber underground light, photorealistic, 4K portrait"},
+  {city:"Çorum",name:"Aylin Demirci",age:34,gender:"female",title:"Arkeoloji & Hitit Uygarlığı Muhabiri",region:"İç Anadolu",personality:"Akademik ama anlaşılır, öğretici tonda anlatır. Hitit uygarlığını herkese sevdirmeyi misyon edinmiş.",topics:["Hattuşa arkeolojik kazıları","Hitit mirası & UNESCO haberleri","Çorum leblebi & gastronomi"],platforms:["YouTube","Podcast","Instagram"],email:"aylin@habertr.com",prompt:"Professional Turkish woman, 34 years old, dark brown hair in a practical ponytail, wearing a khaki field shirt and wide-brim archaeologist hat, standing among ancient Hittite ruins with large stone walls visible, knowledgeable enthusiastic expression, bright sunny archaeological site light, photorealistic, 4K portrait"},
+  {city:"Denizli",name:"Taner Karakaş",age:41,gender:"male",title:"Tekstil & İhracat Muhabiri",region:"Ege",personality:"İş odaklı, rakam bilen, küresel düşünen. Tekstil sektörünü ekonomi gözüyle anlatır. Fabrika gezilerini YouTub'a taşıdı.",topics:["Pamukkale turizm ekonomisi","Denizli tekstil ihracatı","Sanayi 4.0 adaptasyonu"],platforms:["LinkedIn","YouTube","Podcast"],email:"taner@habertr.com",prompt:"Professional Turkish man, 41 years old, short salt-and-pepper hair, clean-shaved, wearing a smart business casual navy shirt, standing in a modern textile factory with large industrial looms in background, self-assured professional expression, bright factory lighting, photorealistic, 4K portrait"},
+  {city:"Diyarbakır",name:"Şilan Aslan",age:28,gender:"female",title:"Kültür & Toplum Muhabiri",region:"Güneydoğu Anadolu",personality:"Cesaretli, empatik, çok dilli. Kürtçe ve Türkçe içerik üretiyor. Kartal Kapısı'nın altında selfie değil, röportaj yapar.",topics:["Sur surları & Hevsel Bahçeleri","Kürt kültürü & günlük yaşam","Kadın hakları & toplumsal dönüşüm"],platforms:["Instagram","Twitter/X","YouTube"],email:"silan@habertr.com",prompt:"Professional Kurdish-Turkish woman, 28 years old, dark long wavy hair, wearing a colorful traditional embroidered vest over a dark blouse, standing in front of ancient black basalt city walls, determined compassionate expression, golden afternoon light on stone walls, photorealistic, 4K portrait"},
+  {city:"Edirne",name:"Volkan Erdoğan",age:37,gender:"male",title:"Spor & Osmanlı Kültürü Muhabiri",region:"Trakya",personality:"Sportif, enerjik, kültürel köprü kurucu. Kırkpınar güreşlerini dünyaya taşımak için var.",topics:["Kırkpınar yağlı güreş haberleri","Selimiye Camii & Osmanlı mirası","Trakya şarap turizmi"],platforms:["YouTube","Instagram","Twitter/X"],email:"volkan@habertr.com",prompt:"Professional Turkish man, 37 years old, short dark hair, athletic build, wearing a smart casual burgundy shirt, standing near the historic Selimiye Mosque with its iconic minarets in background, energetic proud smile, bright blue-sky daylight, photorealistic, 4K portrait"},
+  {city:"Elazığ",name:"Gülten Kılıç",age:43,gender:"female",title:"Enerji & Yerel Ekonomi Muhabiri",region:"Doğu Anadolu",personality:"Kararlı, araştırmacı, çelik gibi. Keban Barajı'ndan Elazığ'ın enerjisine giden suyun her damlasını takip eder.",topics:["Keban Barajı enerji üretimi","Elazığ sanayi & madencilik","Doğu Anadolu kalkınma projeleri"],platforms:["Twitter/X","LinkedIn","Radyo"],email:"gulten@habertr.com",prompt:"Professional Turkish woman, 43 years old, dark hair with subtle grey streaks in a professional updo, wearing a dark teal blazer, standing near a large dam with reservoir visible in background, composed serious professional expression, dramatic landscape lighting, photorealistic, 4K portrait"},
+  {city:"Erzincan",name:"Sinan Tekin",age:31,gender:"male",title:"Doğa & Kış Sporları Muhabiri",region:"Doğu Anadolu",personality:"Dinamik, adrenalin sever, fit. Ergan Kayak Merkezi'ni Türkiye'nin gizli gücü olarak tanıtıyor.",topics:["Ergan Dağı kayak haberleri","Fırat Nehri kültürü","Deprem riski & afet yönetimi"],platforms:["YouTube","Instagram","TikTok"],email:"sinan@habertr.com",prompt:"Professional Turkish man, 31 years old, athletic build, short dark hair, wearing a bright ski jacket unzipped over a thermal shirt, standing on a snowy mountain ski slope with peaks in background, exhilarated energetic expression, crisp winter mountain sunlight, photorealistic, 4K portrait"},
+  {city:"Erzurum",name:"Kamil Yavuz",age:45,gender:"male",title:"Kış Sporları & Kültür Muhabiri",region:"Doğu Anadolu",personality:"Tok sesli, güçlü anlatımlı, olimpiyat hayalcisi. Palandöken'i Türkiye'nin kayak başkenti yapacak.",topics:["Palandöken kayak merkezi","Erzurum cağ kebabı kültürü","Doğu Anadolu turizm stratejileri"],platforms:["YouTube","Podcast","Twitter/X"],email:"kamil@habertr.com",prompt:"Professional Turkish man, 45 years old, strong build, grey-streaked short hair, rugged beard, wearing a thick winter vest over a thermal flannel shirt, standing on a snow-covered mountain slope with ski lifts visible, proud stoic expression, bright cold winter sunlight, photorealistic, 4K portrait"},
+  {city:"Eskişehir",name:"Dila Çakır",age:23,gender:"female",title:"Gençlik, Sanat & Üniversite Şehri Muhabiri",region:"İç Anadolu",personality:"Yaratıcı, sanatçı ruhlu, özgür düşünceli. Eskişehir'in sahne ve sokak kültürünü TikTok'a taşıdı.",topics:["Porsuk Çayı kültür yaşamı","Üniversite gençliği & aktivizm","Lületaşı sanatı & zanaatkarlar"],platforms:["TikTok","Instagram","Substack"],email:"dila@habertr.com",prompt:"Young professional Turkish woman, 23 years old, colorful highlights in dark hair, wearing a vintage denim jacket with artistic patches, standing in a colorful street art alley beside a canal, creative spirited expression, vibrant warm urban light, photorealistic, 4K portrait"},
+  {city:"Gaziantep",name:"Bahar Gürdal",age:36,gender:"female",title:"Gastronomi & İş Dünyası Muhabiri",region:"Güneydoğu Anadolu",personality:"Tutkulu, lezzetli kelimeler kullanan, girişimci. Gaziantep mutfağını uluslararası platforma taşıyan gıda muhabiri.",topics:["Antep baklavası & fıstığı","UNESCO Gastronomi Şehri haberleri","Tekstil & sanayi ihracatı"],platforms:["YouTube","Instagram","Podcast"],email:"bahar@habertr.com",prompt:"Professional Turkish woman, 36 years old, dark brown shoulder-length hair, wearing a warm terracotta blouse, standing in a traditional copper-lined baklava shop with trays of baklava visible, joyful passionate expression, warm golden shop lighting, photorealistic, 4K portrait"},
+  {city:"Giresun",name:"Deniz Kaptan",age:29,gender:"male",title:"Karadeniz Kültürü & Fındık Muhabiri",region:"Doğu Karadeniz",personality:"Dalgalı gibi, serbest ruhlu, fındık bahçelerinde büyümüş. Karadeniz mizahını içeriğine ustaca sokuyor.",topics:["Türkiye fındık ihracatı","Karadeniz yayla yaşamı","Giresun Adası mitleri"],platforms:["YouTube","Instagram","TikTok"],email:"deniz@habertr.com",prompt:"Professional Turkish man, 29 years old, wavy dark hair, light stubble, wearing a casual dark green hoodie, standing in a lush hazelnut orchard on a steep hillside overlooking the Black Sea, relaxed cheerful expression, misty morning light, photorealistic, 4K portrait"},
+  {city:"Gümüşhane",name:"Yusuf Çelik",age:38,gender:"male",title:"Madencilik & Kültürel Miras Muhabiri",region:"Doğu Karadeniz",personality:"Derin, tarihin içinde yaşar gibi anlatır. Gümüş madenleri ve kaybolmakta olan gelenekleri belgeler.",topics:["Tarihi gümüş madenciliği","Zigana Dağı turizmi","Gümüşhane pestili geleneksel üretimi"],platforms:["YouTube","Blog","Radyo"],email:"yusuf@habertr.com",prompt:"Professional Turkish man, 38 years old, dark hair with slight grey, medium beard, wearing a dark wool jacket, standing at the entrance of an old stone-carved mine or castle ruin, serious historical contemplative expression, dramatic shaft of light in dark stone environment, photorealistic, 4K portrait"},
+  {city:"Hakkari",name:"Rojda Yıldız",age:26,gender:"female",title:"Sınır Coğrafyası & Doğa Muhabiri",region:"Güneydoğu Anadolu",personality:"Gözü pek, bağımsız, karanlıkta da çalışır. Cilo-Sat dağlarını Türkiye'ye tanıtmak için köyleri tek başına dolaşıyor.",topics:["Cilo-Sat dağları & vadiler","Sınır bölgesi günlük yaşam","Hakkari el sanatları & kültür"],platforms:["Instagram","Twitter/X","Bağımsız Haber"],email:"rojda@habertr.com",prompt:"Professional Kurdish-Turkish woman, 26 years old, dark hair in a practical braid, wearing a durable outdoor jacket in deep purple, standing on a high rocky mountain ridge with dramatic jagged peaks and deep valleys below, fearless adventurous expression, epic clear sky mountain light, photorealistic, 4K portrait"},
+  {city:"Hatay",name:"Selin Yücel",age:32,gender:"female",title:"Çok-Kültürlü Yaşam & Gastronomi Muhabiri",region:"Akdeniz",personality:"Kozmopolit, hoşgörülü, lezzetlere âşık. Hatay'ın Müslim-Hristiyan-Alevi ortak yaşam kültürünü dünyaya anlatıyor.",topics:["Hatay mutfağı & künefe","Çok-kültürlü Antakya tarihi","Deprem sonrası yeniden yapılanma"],platforms:["Instagram","YouTube","Substack"],email:"selinyu@habertr.com",prompt:"Professional Turkish woman, 32 years old, olive skin, dark wavy shoulder-length hair, wearing a colorful Mediterranean blouse, sitting at an outdoor restaurant table with Middle Eastern-influenced food spread visible, warm open-hearted smile, dappled Mediterranean sunlight, photorealistic, 4K portrait"},
+  {city:"Isparta",name:"Arzu Gül",age:35,gender:"female",title:"Gül & Lavanta Tarımı Muhabiri",region:"Göller Yöresi",personality:"Romantik isimli, gerçekçi içerikli. Gülyağı endüstrisini ihracat rakamlarıyla anlatır. Çiçek sezonu haberleri viral olur.",topics:["Isparta gül hasadı & yağ üretimi","Lavanta tarlası turizmi","Kırsal kadın girişimciler"],platforms:["Instagram","YouTube","Blog"],email:"arzu@habertr.com",prompt:"Professional Turkish woman, 35 years old, soft chestnut hair in loose curls, wearing a pink floral blouse, standing in a vast purple lavender field with rose gardens visible in distance, serene delighted expression, warm summer morning light, photorealistic, 4K portrait"},
+  {city:"Mersin",name:"Cenk Akar",age:40,gender:"male",title:"Liman, Ticaret & Tarım Muhabiri",region:"Akdeniz",personality:"Kozmopolit liman adamı. Mersin'in Türkiye ihracatındaki önemini tek başına savunur. Hızlı, geniş perspektifli.",topics:["Mersin Limanı ihracat haberleri","Narenciye & muz tarımı","Serbest Ticaret Bölgesi ekonomisi"],platforms:["LinkedIn","Twitter/X","Podcast"],email:"cenk@habertr.com",prompt:"Professional Turkish man, 40 years old, tanned skin, short dark hair with slight grey, clean-shaved, wearing a light blue shirt with sleeves rolled up, standing on a port dock with large container ships visible in background, confident direct expression, bright Mediterranean port sunlight, photorealistic, 4K portrait"},
+  {city:"İstanbul",name:"Defne Öz",age:28,gender:"female",title:"Şehir Yaşamı & Kültür Muhabiri",region:"Marmara",personality:"Kozmopolit, hızlı düşünen, İngilizce-Türkçe arasında gidip gelen. İstanbul'un görünmez mahallelerini gün yüzüne çıkarır.",topics:["Kadıköy-Beyoğlu alternatif kültür","Kentsel dönüşüm haberleri","İstanbul göç & çokkültürlülük"],platforms:["Substack","Instagram","Twitter/X"],email:"defne@habertr.com",prompt:"Professional Turkish woman, 28 years old, short stylish dark bob haircut, wearing a chic black turtleneck under a long camel coat, standing on a Bosphorus waterfront with Istanbul skyline and minarets visible behind her, sophisticated urban expression, blue-hour evening light, photorealistic, 4K portrait"},
+  {city:"İzmir",name:"Kaan Türkmen",age:33,gender:"male",title:"Teknoloji & Startup Muhabiri",region:"Ege",personality:"Teknoloji optimisti, laik, sahil kafesinde çalışan startup muhabiri. İzmir'in Silikon Vadisi olma potansiyelini haberleştiriyor.",topics:["İzmir teknoloji ekosistemi","Akdeniz yaşam kalitesi & dijital göçmenler","Tarım-teknoloji girişimleri"],platforms:["LinkedIn","Twitter/X","Substack"],email:"kaan@habertr.com",prompt:"Professional Turkish man, 33 years old, short stylish dark hair, light stubble, wearing a smart casual white Oxford shirt with no tie, standing at a rooftop with Aegean Sea and Izmir cityscape visible, relaxed confident expression, bright coastal sunlight, photorealistic, 4K portrait"},
+  {city:"Kars",name:"Ayla Demirtaş",age:37,gender:"female",title:"Gastronomi & Sınır Kültürü Muhabiri",region:"Kuzeydoğu Anadolu",personality:"Melankolik güzelliğin sesi. Kars peyniri ve Ani harabeleri üzerine içerikler üreten özgün muhabir.",topics:["Kars gravyer & kaşar peyniri","Ani antik kenti","Doğu sınır kültürü & Kafkas etkisi"],platforms:["Instagram","YouTube","Substack"],email:"ayla@habertr.com",prompt:"Professional Turkish woman, 37 years old, dark hair in a thick braid, wearing a warm wool coat in deep red, standing in a snowy town square with a historic Russian architecture church visible, melancholic poetic expression, soft diffused winter light on snow, photorealistic, 4K portrait"},
+  {city:"Kastamonu",name:"Mert Küçük",age:25,gender:"male",title:"Doğa & Gelenek Muhabiri",region:"Batı Karadeniz",personality:"Alçakgönüllü, geleneklere saygılı, sessiz kahraman profili. Kastamonu'nun köylerini YouTub'a taşıdı.",topics:["Ilgaz Dağı & doğa haberleri","Kastamonu pastırması & yaşayan gelenekler","Kırsal gençliğin şehre göçü"],platforms:["YouTube","Instagram","Blog"],email:"mert@habertr.com",prompt:"Professional Turkish man, 25 years old, short dark hair, fresh-faced, wearing a traditional patterned woolen vest over a simple shirt, standing in front of a historic wooden Ottoman mansion in a misty forest setting, humble sincere expression, soft misty Karadeniz morning light, photorealistic, 4K portrait"},
+  {city:"Kayseri",name:"Özlem Yıldırım",age:44,gender:"female",title:"Ticaret & Sanayi Muhabiri",region:"İç Anadolu",personality:"Keskin, ticaret dehası, rakamları sever. Kayseri'nin Anadolu kaplanı kimliğini verilerle anlatır.",topics:["Kayseri sanayii & mobilya ihracatı","Erciyes turizm yatırımları","Kayseri mantısı & gastronomi ekonomisi"],platforms:["LinkedIn","Podcast","Twitter/X"],email:"ozlem@habertr.com",prompt:"Professional Turkish woman, 44 years old, dark hair in a sharp professional bob, wearing a structured charcoal blazer and pearl earrings, standing in a modern industrial showroom with furniture displays visible, confident authoritative expression, clean corporate lighting, photorealistic, 4K portrait"},
+  {city:"Kırklareli",name:"Emre Sarı",age:30,gender:"male",title:"Trakya Kültürü & Enerji Muhabiri",region:"Trakya",personality:"Taze bakışlı, Trakya'nın potansiyelini haber yapan yorulmaz muhabir. Rüzgar ve güneş enerjisini tarlayla birlikte belgeler.",topics:["Trakya doğal gazı & enerji haberleri","Kırklareli ormanları & çevre","Sınır ötesi Balkan kültürü"],platforms:["Twitter/X","Instagram","YouTube"],email:"emres@habertr.com",prompt:"Professional Turkish man, 30 years old, sandy brown short hair, clean-shaved, wearing a light windbreaker jacket, standing in open Thrace farmland with wind turbines on the horizon, casual curious expression, wide open sky light, photorealistic, 4K portrait"},
+  {city:"Kırşehir",name:"Pınar Şimşek",age:27,gender:"female",title:"Halk Müziği & Turizm Muhabiri",region:"İç Anadolu",personality:"Müzikal ruhu var, Aşık Veysel'in sesini güncel habere dönüştürür. TikTok'ta bağlama çalarken haber anlatması viral oldu.",topics:["Aşık Veysel kültürü & halk müziği","Mucur safranı & yerel üretim","Kırşehir termal turizmi"],platforms:["TikTok","YouTube","Instagram"],email:"pinar@habertr.com",prompt:"Professional Turkish woman, 27 years old, long dark hair with natural waves, wearing a colorful handwoven vest over a white blouse, sitting cross-legged and holding a traditional saz instrument, warm folk-spirited smile, soft warm indoor studio light, photorealistic, 4K portrait"},
+  {city:"Kocaeli",name:"Serkan Bulut",age:42,gender:"male",title:"Sanayi & Çevre Muhabiri",region:"Marmara",personality:"Keskin eleştirmen, çevre aktivisti yan kimliğiyle dengeli muhabir. Kocaeli'nin sanayi-çevre çatışmasını cesurca anlatıyor.",topics:["FORD Otosan & TÜPRAŞ haberleri","İzmit Körfezi çevre kirliliği","Sanayi dönüşümü & yeşil enerji"],platforms:["Twitter/X","LinkedIn","Podcast"],email:"serkan@habertr.com",prompt:"Professional Turkish man, 42 years old, short dark hair with grey streaks, wearing a dark grey jacket with a press badge clipped, standing near an industrial zone with refinery towers visible in background, determined critical expression, hazy overcast industrial light, photorealistic, 4K portrait"},
+  {city:"Konya",name:"Hacer Duman",age:39,gender:"female",title:"Kültür & Spiritüel Turizm Muhabiri",region:"İç Anadolu",personality:"Derin, Mevlana'dan ilham alan, ama habercilik için yere basar. Konya'yı yalnızca dini turizm üzerinden değil bütünsel anlatır.",topics:["Mevlana türbesi & sema törenleri","Konya tarım ovası & gıda sanayi","Spiritüel turizm trendleri"],platforms:["YouTube","Instagram","Podcast"],email:"hacer@habertr.com",prompt:"Professional Turkish woman, 39 years old, dark hair tied back simply, wearing a modest but stylish deep burgundy blouse and headscarf arranged elegantly, standing in a beautiful courtyard of a historic Seljuk mosque, serene dignified expression, warm dappled courtyard light, photorealistic, 4K portrait"},
+  {city:"Kütahya",name:"Ozan Ateş",age:34,gender:"male",title:"Çini Sanatı & Kültür Muhabiri",region:"Ege-İç Anadolu",personality:"Sanatsal, detaycı, el emeğine saygılı. Kütahya çinicilerini UNESCO listesine taşımak için mücadele ediyor.",topics:["Kütahya çinicilik sanatı","Dumlupınar tarihi & milli bilinç","Tavşanlı yöresinin tarihsel önemi"],platforms:["Instagram","YouTube","Blog"],email:"ozan@habertr.com",prompt:"Professional Turkish man, 34 years old, short dark hair, neatly trimmed beard, wearing a dark artisan apron over a simple linen shirt, sitting at a ceramic painting workshop table with beautifully painted blue and white tiles visible, focused creative expression, warm artisan workshop lighting, photorealistic, 4K portrait"},
+  {city:"Malatya",name:"Dilek Kayabaşı",age:31,gender:"female",title:"Kayısı Tarımı & Yerel Ekonomi Muhabiri",region:"Doğu Anadolu",personality:"Samimi, tarıma tutunmuş, köylü kadınların sesi. Malatya kayısısını tek başına dünya markası yapmaya kararlı.",topics:["Malatya kayısı ihracatı","Deprem sonrası ekonomik toparlanma","Kadın çiftçi kooperatifleri"],platforms:["Instagram","YouTube","Radyo"],email:"dilek@habertr.com",prompt:"Professional Turkish woman, 31 years old, dark brown hair in a casual ponytail, wearing a simple white t-shirt and colorful apron, standing in a sun-drenched apricot orchard with orange-gold fruits visible on trees, genuine warm expression, bright summer orchard light, photorealistic, 4K portrait"},
+  {city:"Manisa",name:"Furkan Erdoğan",age:28,gender:"male",title:"Tarım & Mesir Macunu Muhabiri",region:"Ege",personality:"Kültürel gururu yüksek, antik Sardes'ten modern tarıma geniş yelpazeyle muhabirlik yapıyor.",topics:["Mesir Macunu Festivali","Manisa üzüm & incir tarımı","Sardes arkeolojisi"],platforms:["Instagram","Twitter/X","YouTube"],email:"furkan@habertr.com",prompt:"Professional Turkish man, 28 years old, dark hair, clean-shaved, wearing a casual Aegean-style linen shirt in blue, standing in a vineyard with lush grape vines, cheerful enthusiastic expression, warm Aegean afternoon light, photorealistic, 4K portrait"},
+  {city:"Kahramanmaraş",name:"Aysun Yıldıray",age:45,gender:"female",title:"Gastronomi & Dayanışma Muhabiri",region:"Güneydoğu Anadolu",personality:"Güçlü, acıdan güç alan, dondurma kadar çekici. Dondurma ustalarını ve deprem sonrası yeniden yapılanmayı eşzamanlı belgeler.",topics:["Maraş dondurması & gastronomi","Deprem bölgesi yeniden yapılanma","Maraş biberi & gıda ihracatı"],platforms:["YouTube","Instagram","Radyo"],email:"aysun@habertr.com",prompt:"Professional Turkish woman, 45 years old, dark hair with dignified grey streaks worn down, wearing a vibrant brick-red blouse, standing in front of a traditional ice cream shop with a street vendor in background, resilient warm expression, bright sunny market street light, photorealistic, 4K portrait"},
+  {city:"Mardin",name:"Lara Bozan",age:29,gender:"female",title:"Tarihi Miras & Kültür Muhabiri",region:"Güneydoğu Anadolu",personality:"Büyüleyici anlatıcı, tarihin içinden konuşur. Süryani, Kürt ve Arap kültürlerini bir arada yaşatan Mardin'i dünyaya anlatmak için doğmuş.",topics:["Mardin taş mimarisi & UNESCO mirası","Süryani kültürü & Mor Gabriel","Çok-kültürlü yaşam haberleri"],platforms:["Instagram","YouTube","Substack"],email:"lara@habertr.com",prompt:"Professional Turkish woman, 29 years old, olive skin, dark hair elegantly draped, wearing a cream blouse with traditional Syriac-inspired silver jewelry, sitting on a rooftop terrace with the stunning ancient stone city of Mardin cascading down the hillside in background, enchanting mysterious expression, magical golden sunset light, photorealistic, 4K portrait"},
+  {city:"Muğla",name:"Berk Deniz",age:32,gender:"male",title:"Turizm & Mavi Yolculuk Muhabiri",region:"Ege Akdeniz",personality:"Dalgacı, deniz tutkunu, sürdürülebilir turizm savunucusu. Teknesiyle haber yapar, gözle görülmesi lazım.",topics:["Bodrum-Marmaris turizm haberleri","Deniz kirliliği & çevre","Lüks tekne & mavi yolculuk ekonomisi"],platforms:["Instagram","YouTube","TikTok"],email:"berk@habertr.com",prompt:"Professional Turkish man, 32 years old, sun-bleached dark hair, tanned skin, wearing a light nautical navy and white striped shirt, standing on the bow of a traditional Turkish wooden gulet boat with turquoise Aegean water behind, free-spirited adventurous smile, brilliant Mediterranean sea light, photorealistic, 4K portrait"},
+  {city:"Muş",name:"Cengiz Kaplan",age:41,gender:"male",title:"Tarım & Doğu Kültür Muhabiri",region:"Doğu Anadolu",personality:"Sabırlı, toprağa kök salmış, geniş ova gibi geniş bakışlı. Muş ovasının tarımsal potansiyelini belgeliyor.",topics:["Muş ovası tarım haberleri","Doğu Anadolu hayvancılık","Küçük şehir demografisi & göç"],platforms:["Radyo","YouTube","Instagram"],email:"cengiz@habertr.com",prompt:"Professional Turkish man, 41 years old, dark complexion, short dark hair, full beard, wearing a practical work jacket, standing in a vast flat agricultural plain with mountains in background under a big sky, grounded calm expression, wide open country light, photorealistic, 4K portrait"},
+  {city:"Nevşehir",name:"Rüya Acar",age:24,gender:"female",title:"Kapadokya Turizm & Kültür Muhabiri",region:"İç Anadolu",personality:"Hayal gücü yüksek, turistleri ve yerelleri birleştiren genç muhabir. Sıcap balonuyla haber anlatması Instagram'ı kilitledi.",topics:["Kapadokya balon turizmi","Peri bacaları & jeoloji","Yeraltı şehirleri & tarihi miras"],platforms:["Instagram","TikTok","YouTube"],email:"ruya@habertr.com",prompt:"Young professional Turkish woman, 24 years old, dark hair flying lightly in the breeze, wearing a light lavender jacket, standing in a wicker hot air balloon basket floating above the iconic fairy chimney rock formations of Cappadocia at sunrise, wonder-filled joyful expression, magical pink and orange sunrise light, photorealistic, 4K portrait"},
+  {city:"Niğde",name:"Tuba Özdemir",age:36,gender:"female",title:"Tarım & Yerel Kalkınma Muhabiri",region:"İç Anadolu",personality:"Sade, verimli, gösteriş olmadan anlatır. Patates ve elma üreticilerinin sesi olmayı görev bilir.",topics:["Niğde patates & elma üretimi","Aladağlar doğa haberleri","Orta Anadolu kırsal kalkınma projeleri"],platforms:["Radyo","YouTube","Instagram"],email:"tuba@habertr.com",prompt:"Professional Turkish woman, 36 years old, dark hair in a practical bun, minimal makeup, wearing a practical outdoor jacket in earthy brown, standing in a green apple orchard with the Aladağlar mountains visible in background, sincere humble expression, clear mountain air light, photorealistic, 4K portrait"},
+  {city:"Ordu",name:"Seda Fındık",age:27,gender:"female",title:"Karadeniz Yaşamı & Tarım Muhabiri",region:"Doğu Karadeniz",personality:"Yaşam dolu, dağ kızı enerjisiyle muhabirlik yapıyor. Fındık hasadını kamera arkasından anlatan sesle başladı.",topics:["Ordu fındık hasadı & ihracat","Boztepe & yayla turizmi","Karadeniz hamsi kültürü"],platforms:["TikTok","Instagram","YouTube"],email:"seda@habertr.com",prompt:"Professional Turkish woman, 27 years old, curly dark hair, rosy cheeks, wearing a casual colorful sweater, standing on a steep hillside hazelnut farm with the Black Sea visible in the misty distance below, lively cheerful expression, cloudy soft Karadeniz light, photorealistic, 4K portrait"},
+  {city:"Rize",name:"Hüseyin Çay",age:48,gender:"male",title:"Çay Kültürü & Karadeniz Muhabiri",region:"Doğu Karadeniz",personality:"Çayın içinde doğmuş, çayın içinde büyümüş. Rize'yi dünyaya tanıtmanın tek yolunun çay olduğuna inanır. Deneyimli radyocu.",topics:["Türkiye çay üretimi & ihracatı","Rize yayla kültürü","Karadeniz balıkçılık haberleri"],platforms:["Radyo","YouTube","Podcast"],email:"huseyin@habertr.com",prompt:"Professional Turkish man, 48 years old, greying black hair, warm round face with kind eyes, wearing a classic dark green vest over a traditional shirt, sitting at a traditional wooden tea house table with several curved tulip-shaped tea glasses, warm grandfatherly expression, soft warm tea house lighting, photorealistic, 4K portrait"},
+  {city:"Sakarya",name:"Musa Güler",age:35,gender:"male",title:"Sanayi & Orman Muhabiri",region:"Marmara",personality:"Güvenilir, sistematik, Adapazarı'nın sanayi hızını dışarıya anlatmakta uzman. Ormancılık meselelerine de kafa yorar.",topics:["Sakarya otomotiv sanayii","Sapanca Gölü su havzası haberleri","Deprem hazırlığı & kentsel dönüşüm"],platforms:["LinkedIn","Twitter/X","Radyo"],email:"musa@habertr.com",prompt:"Professional Turkish man, 35 years old, short dark hair, clean-shaved, wearing a practical field jacket over a solid-color sweater, standing near a lakeside with a forest backdrop and industrial facilities visible in distance, reliable calm expression, cool misty lake light, photorealistic, 4K portrait"},
+  {city:"Samsun",name:"Cansu Demir",age:30,gender:"female",title:"Karadeniz Şehri & Spor Muhabiri",region:"Orta Karadeniz",personality:"Sportif, takım oyuncusu, Samsunspor kadar sahici. Karadeniz'in en büyük şehrini dinamik bir enerjiyle anlatıyor.",topics:["Samsunspor & Karadeniz futbolu","Samsun liman & ticaret haberleri","Bandırma-Samsun tarihi & Atatürk'ün çıkışı"],platforms:["Twitter/X","Instagram","Radyo"],email:"cansu@habertr.com",prompt:"Professional Turkish woman, 30 years old, sporty build, straight dark hair in a ponytail, wearing a casual burgundy jacket over a white shirt, standing on a promenade by the Black Sea with a modern harbor visible, energetic confident expression, breezy coastal sunlight, photorealistic, 4K portrait"},
+  {city:"Siirt",name:"Ayhan Taş",age:43,gender:"male",title:"Kültür & Gastronomi Muhabiri",region:"Güneydoğu Anadolu",personality:"Alçakgönüllü ama tutkulu. Siirt büryan kebabını ve Tillo ilçesinin gizemini dünyaya açan muhabir.",topics:["Siirt büryan kebabı & gastronomi","Tillo & tarihi dini mekânlar","Siirt battaniyesi zanaatkârları"],platforms:["YouTube","Instagram","Radyo"],email:"ayhan@habertr.com",prompt:"Professional Turkish man, 43 years old, dark complexion, short greying black hair, neat full beard, wearing a traditional embroidered vest, standing in a rustic kebab restaurant with a wood-fired oven visible in background, generous warm hosting expression, warm amber firelight, photorealistic, 4K portrait"},
+  {city:"Sinop",name:"Nehir Öz",age:22,gender:"female",title:"Karadeniz Kıyı Yaşamı Muhabiri",region:"Orta Karadeniz",personality:"Genç ve meraklı, Sinop'un coğrafi güzelliğinden ilham alıyor. Türkiye'nin en kuzey noktasından haber yapmanın romantizmini taşıyor.",topics:["Sinop Burnu & coğrafi turizm","Karadeniz balıkçılık yaşamı","Tarihi hapishane & dönüşüm projeleri"],platforms:["Instagram","TikTok","Substack"],email:"nehir@habertr.com",prompt:"Young professional Turkish woman, 22 years old, long flowing dark hair, wearing a light sea-blue raincoat open over a simple shirt, standing at the very tip of a rocky seaside cape with the Black Sea on three sides, adventurous happy expression, dramatic coastal wind and sea light, photorealistic, 4K portrait"},
+  {city:"Sivas",name:"Alper Kahraman",age:38,gender:"male",title:"Kültür & Tarih Muhabiri",region:"İç Anadolu",personality:"Medeni cesareti olan, Sivas tarihinin acılı sayfalarını da yazan, iyileşmeyi belgeleyen muhabir.",topics:["Sivas Selçuklu mimarisi","Madımak ve toplumsal bellek","Kangal köpeği & çoban kültürü"],platforms:["Substack","Twitter/X","Podcast"],email:"alper@habertr.com",prompt:"Professional Turkish man, 38 years old, short dark hair, serious contemplative face, wearing a dark olive jacket and simple scarf, standing near a medieval Seljuk caravanserai with intricate stone carvings visible, dignified thoughtful expression, cool diffused autumn light, photorealistic, 4K portrait"},
+  {city:"Tekirdağ",name:"Banu Koçak",age:33,gender:"female",title:"Trakya Gastronomisi & Tarım Muhabiri",region:"Trakya",personality:"Sofistike damak sahibi, Trakya bağlarını dolaşarak şarap ve rakı kültürünü belgeleyen özgün muhabir.",topics:["Tekirdağ rakısı & üzüm bağları","Trakya şarap rotaları","Tekirdağ köftesi & gastronomi"],platforms:["Instagram","YouTube","Substack"],email:"banu@habertr.com",prompt:"Professional Turkish woman, 33 years old, chestnut hair in loose waves, wearing a sophisticated dark plum blouse and light scarf, standing in a vineyard with rows of wine grapes stretching into the distance, refined elegant smile, warm late-afternoon vineyard light, photorealistic, 4K portrait"},
+  {city:"Tokat",name:"Gökhan Çetin",age:29,gender:"male",title:"Tarihi Kale & Kültür Muhabiri",region:"Karadeniz",personality:"Tarihe meraklı, Tokat'ı hak ettiği ilgiyle tanıtmaya adadığı gençliğini. Kale surlarına tırmanıp haber yapar.",topics:["Tokat Kalesi & tarihi yapılar","Tokat halısı & zanaatkarlar","Niksar & Sulusaray antik kalıntıları"],platforms:["YouTube","Instagram","Blog"],email:"gokhan@habertr.com",prompt:"Professional Turkish man, 29 years old, short dark hair, cheerful face, wearing a casual burgundy hoodie, standing on top of an ancient hilltop fortress with old stone walls and a panoramic valley view, excited curious expression, clear blue-sky daylight, photorealistic, 4K portrait"},
+  {city:"Trabzon",name:"Burcu Karadeniz",age:35,gender:"female",title:"Futbol & Karadeniz Kültürü Muhabiri",region:"Doğu Karadeniz",personality:"Tutkulu, Trabzonspor'un bordo-mavisini ruhuna işlemiş. Karadeniz kültürünü futboldan coğrafyaya kadar geniş anlatır.",topics:["Trabzonspor & Karadeniz futbol kültürü","Sümela Manastırı & turizm","Trabzon laz böreği & mutfak"],platforms:["Twitter/X","YouTube","TikTok"],email:"burcu@habertr.com",prompt:"Professional Turkish woman, 35 years old, dark wavy hair, expressive face, wearing a sporty burgundy and dark blue jacket, standing on a hillside overlooking the Black Sea coast with Trabzon city visible below, passionate proud expression, dramatic cloudy coastal light, photorealistic, 4K portrait"},
+  {city:"Tunceli",name:"Dersim Aksoy",age:27,gender:"male",title:"Doğa & Kültür Muhabiri",region:"Doğu Anadolu",personality:"Şiirsel, doğayla barışık, kolektif belleği taşıyan. Munzur vadisini ve yaşayan kültürü hassasiyetle belgeler.",topics:["Munzur Vadisi & doğal parklar","Tunceli Alevi kültürü & cemevi","Dağ keçisi & doğa haberleri"],platforms:["Substack","Instagram","YouTube"],email:"dersim@habertr.com",prompt:"Professional Turkish man, 27 years old, medium-length dark hair, light beard, wearing a simple natural-linen shirt, sitting by a crystal-clear rushing mountain river in a lush green gorge, peaceful reflective expression, dappled soft forest light, photorealistic, 4K portrait"},
+  {city:"Şanlıurfa",name:"Vedat Sarı",age:44,gender:"male",title:"Medeniyet & Kültür Muhabiri",region:"Güneydoğu Anadolu",personality:"Kadim bilgeler gibi konuşur, Göbekli Tepe'den Balıklıgöl'e her taşın hikayesini bilir. Belgesel yapımcılığa geçmeyi planlıyor.",topics:["Göbekli Tepe & Taş Tepeler","Balıklıgöl & İbrahim peygamber kültürü","Harran ovaları & tarım"],platforms:["YouTube","Podcast","Twitter/X"],email:"vedat@habertr.com",prompt:"Professional Turkish man, 44 years old, dark complexion, short greying black hair, full distinguished beard, wearing a traditional cream-coloured linen şalvar outfit, standing at the ancient archaeological site of Göbekli Tepe with megalithic stone pillars visible, sage wise expression, dramatic archaeological site light, photorealistic, 4K portrait"},
+  {city:"Uşak",name:"Ece Demirel",age:31,gender:"female",title:"Deri & Tekstil Sanayi Muhabiri",region:"Ege-İç Anadolu",personality:"İşini ciddiye alan fabrika muhabiri. Uşak'ın deri endüstrisinin uluslararası ihracat başarısını verilerle ve hikayeyle anlatır.",topics:["Uşak deri & tekstil ihracatı","Uşak halıcılık geleneği","Sanayi kentinde yaşam kalitesi"],platforms:["LinkedIn","Instagram","Radyo"],email:"ece@habertr.com",prompt:"Professional Turkish woman, 31 years old, straight dark brown hair to shoulders, wearing a smart camel-colored blazer, standing in a modern leather goods factory with finished leather products displayed in background, professional self-assured expression, clean factory showroom lighting, photorealistic, 4K portrait"},
+  {city:"Van",name:"Rojin Akyüz",age:26,gender:"female",title:"Van Gölü & Doğu Kültürü Muhabiri",region:"Doğu Anadolu",personality:"Yüksek enerji, cesur, Van kedisi kadar bağımsız. Van Gölü'nün Türkiye'nin en ilgi çekici gizemi olduğunu ispat etmeye çalışıyor.",topics:["Van kedisi & yerel kültür","Van Gölü canavar efsanesi & turizm","Akdamar Kilisesi & tarihi miras"],platforms:["TikTok","Instagram","YouTube"],email:"rojin@habertr.com",prompt:"Professional Kurdish-Turkish woman, 26 years old, dark hair in loose curls, wearing a bright turquoise blouse, standing at the shore of a vast deep blue lake with a small island and ancient Armenian church visible in background, lively adventurous expression, clear high-altitude lake sunlight, photorealistic, 4K portrait"},
+  {city:"Yozgat",name:"Oktay Kılıç",age:40,gender:"male",title:"Orta Anadolu & Tarım Muhabiri",region:"İç Anadolu",personality:"Sakin denizin altında saklanan fırtına. Yozgat'ın görünmez olmasına isyan ederek habercilik yapıyor.",topics:["Çamlık Milli Parkı doğa haberleri","Yozgat tarımı & hayvancılık","Şapinuva arkeolojik alanı"],platforms:["Radyo","YouTube","Twitter/X"],email:"oktay@habertr.com",prompt:"Professional Turkish man, 40 years old, slightly heavy build, short salt-and-pepper hair, full beard, wearing a warm flannel shirt and practical vest, standing in an open Anatolian steppe landscape with rolling hills under a dramatic cloud-filled sky, determined stubborn expression, wide open Anatolian light, photorealistic, 4K portrait"},
+  {city:"Zonguldak",name:"Umut Maden",age:34,gender:"male",title:"Maden & Karadeniz Sanayi Muhabiri",region:"Batı Karadeniz",personality:"Kömür karası ama yüreği aydınlık. Zonguldak maden işçilerinin sesini çıkaran tek muhabir olmaktan çekinmiyor.",topics:["Kömür madenciliği & iş güvenliği","Zonguldak sanayi dönüşümü","Karadeniz Ereğlisi çelik sanayii"],platforms:["Twitter/X","YouTube","Radyo"],email:"umut@habertr.com",prompt:"Professional Turkish man, 34 years old, medium build, dark hair with a strand falling over forehead, wearing a worn leather jacket over a simple shirt, standing at a historic coal mine entrance with mining equipment visible, determined compassionate expression, dramatic heavy overcast light, photorealistic, 4K portrait"},
+  {city:"Aksaray",name:"Tuğba Sezer",age:28,gender:"female",title:"Kapadokya Kapısı & Turizm Muhabiri",region:"İç Anadolu",personality:"Enerjik tanıtımcı, Aksaray'ın Kapadokya'nın gölgesinde kalmasına razı değil. Ihlara Vadisi'ni tek başına dünyaya tanıtıyor.",topics:["Ihlara Vadisi yürüyüş haberleri","Aksaray Sultanhanı kervansarayı","Tuz Gölü çevre haberleri"],platforms:["Instagram","TikTok","YouTube"],email:"tugba@habertr.com",prompt:"Professional Turkish woman, 28 years old, dark hair in a high ponytail, wearing a sporty outdoor jacket in coral orange, standing at the entrance of a dramatic canyon valley with ancient cave churches carved into rock walls, energetic enthusiastic expression, warm sunlight streaming into the canyon, photorealistic, 4K portrait"},
+  {city:"Bayburt",name:"Erdal Çiftçi",age:46,gender:"male",title:"Kale & Küçük Şehir Yaşamı Muhabiri",region:"Kuzeydoğu Anadolu",personality:"Dağ gibi sakin, kale gibi sağlam. Türkiye'nin en küçük ilinden dünyanın en gürültülü haberlerini yapar.",topics:["Bayburt Kalesi & tarihi miras","Dağ yaylaları & çoban yaşamı","Küçük şehir ekonomisi & nüfus"],platforms:["Radyo","YouTube","Blog"],email:"erdal@habertr.com",prompt:"Professional Turkish man, 46 years old, stocky build, greying hair, full beard, wearing a heavy wool coat, standing before a dramatic ancient castle fortress on a rocky hill, steadfast stoic expression, cool mountain air light with dramatic clouds, photorealistic, 4K portrait"},
+  {city:"Karaman",name:"Nilüfer Yalçın",age:32,gender:"female",title:"Türkçenin Başkenti & Kültür Muhabiri",region:"İç Anadolu",personality:"Dil aşığı, Karamanoğlu Mehmet Bey'in Türkçe fermanına adanmış. Kültürel mirasla yaşayan bir muhabir.",topics:["Türkçenin resmi dil ilan edilmesi tarihi","Karaman arkeoloji haberleri","Meyve bahçeleri & tarım ekonomisi"],platforms:["Substack","Twitter/X","Podcast"],email:"nilufer@habertr.com",prompt:"Professional Turkish woman, 32 years old, elegant dark wavy hair, wearing a simple but sophisticated dark grey blouse with a small Turkish calligraphy pendant, sitting at a historic library desk surrounded by Ottoman manuscripts, cultured refined expression, warm library candlelight aesthetic, photorealistic, 4K portrait"},
+  {city:"Kırıkkale",name:"Barış Demir",age:37,gender:"male",title:"Sanayi & Savunma Sektörü Muhabiri",region:"İç Anadolu",personality:"Teknik, güvenlik odaklı, savunma sanayiini takip eden nadir muhabirlerden. MKE fabrikasını içten bilen.",topics:["Türk savunma sanayii haberleri","Kırıkkale MKE & silah sanayii","Orta Anadolu çelik sektörü"],platforms:["LinkedIn","Twitter/X","Podcast"],email:"baris@habertr.com",prompt:"Professional Turkish man, 37 years old, short dark hair, closely trimmed beard, wearing a smart dark jacket, standing in front of a modern defense industry facility with Turkish flags visible, sharp intelligent expression, clean corporate daylight, photorealistic, 4K portrait"},
+  {city:"Batman",name:"Helin Kazan",age:25,gender:"female",title:"Petrol Kültürü & Toplum Muhabiri",region:"Güneydoğu Anadolu",personality:"Keskin, sorgulayan, petrol endüstrisinin sosyal etkisini belgeleyen yeni nesil muhabir.",topics:["Batman petrol sanayii haberleri","Hasankeyf & tarihi alan kayıpları","Genç nüfus & göç haberleri"],platforms:["Twitter/X","Instagram","Substack"],email:"helin@habertr.com",prompt:"Professional Kurdish-Turkish woman, 25 years old, short stylish dark hair, wearing a structured black jacket, standing in an urban street with oil pump jacks visible in the industrial background and historical stone structures nearby, sharp determined expression, dramatic mixed industrial and golden-hour light, photorealistic, 4K portrait"},
+  {city:"Şırnak",name:"Serhat Cizre",age:30,gender:"male",title:"Sınır Bölgesi & Kültür Muhabiri",region:"Güneydoğu Anadolu",personality:"Cesur, sınırda yaşamanın bilgeliğiyle donanmış. Cudi Dağı eteklerinden anlatan bağımsız muhabir.",topics:["Irak sınırı bölge haberleri","Cudi Dağı doğası & efsaneler","Şırnak el sanatları & kültür"],platforms:["Twitter/X","Bağımsız Haber","Instagram"],email:"serhat@habertr.com",prompt:"Professional Turkish man, 30 years old, dark complexion, short dark hair, medium beard, wearing a durable outdoor jacket, standing on a rocky hillside with dramatic mountain peaks in background near the Iraqi border, brave resilient expression, stark high-contrast mountain sunlight, photorealistic, 4K portrait"},
+  {city:"Bartın",name:"Şule Orman",age:24,gender:"female",title:"Doğa & Eko-Turizm Muhabiri",region:"Batı Karadeniz",personality:"Doğa kızı, orman gibi temiz ve dürüst. Ulugöl ve Küre Dağları'nı keşfetmek için her gün başka bir yolda.",topics:["Küre Dağları Milli Parkı haberleri","Bartın Irmağı & nehir turizmi","Geleneksel sandal yapımı zanaatı"],platforms:["Instagram","YouTube","TikTok"],email:"sule@habertr.com",prompt:"Young professional Turkish woman, 24 years old, long dark hair, rosy cheeks, wearing a green waterproof hiking jacket, standing in a dense ancient beech forest with mist filtering through the trees, pure natural joyful expression, soft filtered forest light, photorealistic, 4K portrait"},
+  {city:"Ardahan",name:"Fırat Kaya",age:39,gender:"male",title:"Göç, Hayvancılık & Sınır Kültürü Muhabiri",region:"Kuzeydoğu Anadolu",personality:"Yalnız vadilerde güçlenmiş, her kelimesi ölçülü. Ardahan'ın boş görünen ovalarını dolu hikayelerle anlatır.",topics:["Ardahan hayvancılık & peynir","Gürcistan sınırı & kültürel geçişkenlik","Göç ve terk edilen köyler"],platforms:["Radyo","YouTube","Blog"],email:"firat@habertr.com",prompt:"Professional Turkish man, 39 years old, weathered skin, dark hair with grey, medium beard, wearing a thick sheepskin coat, standing in a vast frozen steppe landscape near the Georgian border with mountains on the horizon, stoic solitary expression, cold clear winter light on open plateau, photorealistic, 4K portrait"},
+  {city:"Iğdır",name:"Güneş Duman",age:28,gender:"female",title:"Ağrı Dağı Gölgesinde Yaşam Muhabiri",region:"Kuzeydoğu Anadolu",personality:"Işıltılı, iyimser, Ağrı Dağı'nın o muhteşem siluetini her haberiyle paylaşmak zorunda hisseder.",topics:["Ağrı Dağı gölgesinde günlük yaşam","Iğdır incir & kayısı bahçeleri","İran-Ermenistan sınırı bölge haberleri"],platforms:["Instagram","TikTok","YouTube"],email:"gunes@habertr.com",prompt:"Professional Turkish woman, 28 years old, warm olive skin, medium-length wavy dark hair, wearing a bright yellow parka jacket, standing in a blooming apricot orchard with the iconic snow-capped Mount Ararat dominating the background sky, radiant optimistic smile, bright spring orchard light, photorealistic, 4K portrait"},
+  {city:"Yalova",name:"Gizem Çiçek",age:31,gender:"female",title:"Çiçekçilik & Yaşam Kalitesi Muhabiri",region:"Marmara",personality:"Narin görünümlü ama keskin analizli. Yalova'nın İstanbul'a yakınlığından nasıl avantaj sağladığını bilen muhabir.",topics:["Yalova çiçekçilik & peyzaj endüstrisi","Termal turizm haberleri","İstanbul'un bahçesi olmak: Yalova modeli"],platforms:["Instagram","Substack","YouTube"],email:"gizem@habertr.com",prompt:"Professional Turkish woman, 31 years old, light skin, chestnut hair with natural waves, wearing a floral-print blazer over a white blouse, standing in a colorful flower nursery with hundreds of blooming plants visible in rows, gentle sophisticated smile, soft greenhouse diffused light, photorealistic, 4K portrait"},
+  {city:"Karabük",name:"Demir Saraç",age:45,gender:"male",title:"Demir-Çelik & Tarihi Miras Muhabiri",region:"Batı Karadeniz",personality:"Sert dışı, sıcak içi. Karabük çeliğinin ve Safranbolu'nun aynı şehirde barışmasını haber yapar.",topics:["Karabük Demir-Çelik sanayii","Safranbolu Osmanlı mimarisi & UNESCO","Batı Karadeniz sanayi dönüşümü"],platforms:["LinkedIn","YouTube","Radyo"],email:"demir@habertr.com",prompt:"Professional Turkish man, 45 years old, stocky strong build, short greying hair, full beard, wearing a dark industrial work jacket, with one side showing a steel mill and the other showing traditional Ottoman wooden houses of Safranbolu in a split background, no-nonsense honest expression, dramatic contrast between industrial and heritage lighting, photorealistic, 4K portrait"},
+  {city:"Kilis",name:"Levent Aktaş",age:33,gender:"male",title:"Zeytinyağı & Sınır Gastronomi Muhabiri",region:"Güneydoğu Anadolu",personality:"Zeytinlik kadar köklü, Suriye sınırına yakın olmanın getirdiği farkındalıkla haber yapan muhabir.",topics:["Kilis zeytinyağı üretimi & ihracatı","Suriye sınırı insani konular","Kilis yemek kültürü & ciciköfte"],platforms:["Instagram","YouTube","Radyo"],email:"levent@habertr.com",prompt:"Professional Turkish man, 33 years old, medium-dark complexion, short dark hair, light beard, wearing a casual linen shirt, standing in a silver-leafed olive grove with ancient gnarly olive trees, sincere dignified expression, warm Mediterranean olive grove light, photorealistic, 4K portrait"},
+  {city:"Osmaniye",name:"Neslihan Kurt",age:29,gender:"female",title:"Tarım & Doğa Muhabiri",region:"Çukurova",personality:"Toprakla barışık, fırtınayla da. Osmaniye'nin hem Amanos Dağları hem Çukurova ovasını taşıdığını anlatıyor.",topics:["Amanos Dağları doğa haberleri","Osmaniye çay & narenciye tarımı","Suriye mültecileri & yerel uyum"],platforms:["Instagram","Radyo","YouTube"],email:"neslihan@habertr.com",prompt:"Professional Turkish woman, 29 years old, dark hair in a simple braid, wearing a practical outdoor shirt in olive green, standing at the edge of a mountain with a fertile agricultural plain stretching below and mountains behind, grounded natural expression, late afternoon light between mountain and plain, photorealistic, 4K portrait"},
+  {city:"Düzce",name:"Okan Yıldız",age:36,gender:"male",title:"Afet Dirençli Şehir & Doğa Muhabiri",region:"Batı Karadeniz",personality:"Olayları tarihsel belleğiyle değerlendiriyor. 1999 depremi sonrası yeniden doğan Düzce'nin en iyi kronikcisi.",topics:["Düzce afet dirençli kentsel dönüşüm","Akçakoca & Karadeniz kıyı haberleri","Sanayi haberleri & İstanbul'a yakınlık"],platforms:["Podcast","Twitter/X","YouTube"],email:"okan@habertr.com",prompt:"Professional Turkish man, 36 years old, short dark hair, light stubble, wearing a smart casual dark jacket, standing in a modern rebuilt city district with green hills and forest visible in background, reflective resilient expression, clear bright daylight after the storm, photorealistic, 4K portrait"}
+];
+
+let activeGender = 'all';
+
+function getInitials(name) {
+  return name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+}
+
+const COLORS = [
+  ['#2D1F3D','#9B59B6'],['#1A2D3D','#3498DB'],['#1F3D2D','#2ECC71'],
+  ['#3D2D1A','#E67E22'],['#3D1A1A','#E30A17'],['#1A1A3D','#6C5CE7'],
+  ['#2D3D1A','#27AE60'],['#3D2D2D','#E74C3C'],['#1A3D3D','#1ABC9C']
+];
+
+function getColor(idx) { return COLORS[idx % COLORS.length]; }
+
+function platformIcon(p) {
+  const icons = {
+    'Instagram':'📷','YouTube':'▶️','TikTok':'🎵','LinkedIn':'💼',
+    'Twitter/X':'𝕏','Podcast':'🎙️','Substack':'📝','Blog':'✍️',
+    'Radyo':'📻','Telegram':'💬','Bağımsız Haber':'📰','NGO Blog':'🌱'
+  };
+  return icons[p] || '🔗';
+}
+
+function copyPrompt(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Kopyalandı';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '⎘ Kopyala';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function renderCards(data) {
+  const grid = document.getElementById('grid');
+  if (data.length === 0) {
+    grid.innerHTML = '<div class="no-results">🔍 Sonuç bulunamadı</div>';
+    return;
+  }
+  grid.innerHTML = data.map((c, i) => {
+    const [bg, fg] = getColor(i);
+    const initials = getInitials(c.name);
+    const promptId = 'prompt-' + i;
+    const btnId = 'btn-' + i;
+    return `
+    <div class="card" data-city="${c.city}" data-name="${c.name}" data-gender="${c.gender}" data-topics="${c.topics.join(' ')}">
+      <div class="card-header">
+        <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
+        <div class="card-meta">
+          <div class="card-name">🇹🇷 ${c.name}<span class="card-age-badge">${c.age}</span></div>
+          <div class="card-title">${c.title}</div>
+          <div class="card-city">📍 ${c.city} · ${c.region}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="section-label">Kişilik</div>
+          <div class="personality-text">${c.personality}</div>
+        </div>
+        <div>
+          <div class="section-label">İçerik Konuları</div>
+          <div class="topics-list">${c.topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="section-label">Platformlar & E-posta</div>
+          <div class="platforms">${c.platforms.map(p => `<span class="platform-pill">${platformIcon(p)} ${p}</span>`).join('')}</div>
+          <div class="email-row" style="margin-top:8px;"><a href="mailto:${c.email}">${c.email}</a></div>
+        </div>
+      </div>
+      <div class="prompt-section">
+        <div class="prompt-header">
+          <span class="prompt-label">🎨 Görsel Prompt (Midjourney / DALL-E)</span>
+          <button class="copy-btn" id="${btnId}" onclick="copyPrompt(this, \`${c.prompt.replace(/`/g,'\\`')}\`)">⎘ Kopyala</button>
+        </div>
+        <div class="prompt-text" id="${promptId}" onclick="this.classList.toggle('expanded')" title="Tam metni görmek için tıkla">${c.prompt}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setGender(g, btn) {
+  activeGender = g;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = CHARS.filter(c => {
+    const matchGender = activeGender === 'all' || c.gender === activeGender;
+    const matchSearch = !q || 
+      c.name.toLowerCase().includes(q) || 
+      c.city.toLowerCase().includes(q) || 
+      c.title.toLowerCase().includes(q) || 
+      c.topics.some(t => t.toLowerCase().includes(q)) ||
+      c.region.toLowerCase().includes(q);
+    return matchGender && matchSearch;
+  });
+  renderCards(filtered);
+}
+
+renderCards(CHARS);
+</script>
+</body>
+</html>

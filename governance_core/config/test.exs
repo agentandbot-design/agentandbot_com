@@ -6,12 +6,16 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :governance_core, GovernanceCore.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "governance_core_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database:
+    Path.expand(
+      "../governance_core_test#{System.get_env("MIX_TEST_PARTITION")}.db",
+      __DIR__
+    ),
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
+
+config :governance_core, :daily_feed_worker, false
+config :governance_core, :internal_tools_sync, false
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

@@ -67,6 +67,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
+
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
@@ -102,15 +103,11 @@ defmodule GovernanceCoreWeb.CoreComponents do
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </.link>
+      <.link class={@class} {@rest}>{render_slot(@inner_block)}</.link>
       """
     else
       ~H"""
-      <button class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </button>
+      <button class={@class} {@rest}>{render_slot(@inner_block)}</button>
       """
     end
   end
@@ -255,8 +252,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <textarea
+        <span :if={@label} class="label mb-1">{@label}</span> <textarea
           id={@id}
           name={@name}
           class={[
@@ -298,8 +294,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
   defp error(assigns) do
     ~H"""
     <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle" class="size-5" />
-      {render_slot(@inner_block)}
+      <.icon name="hero-exclamation-circle" class="size-5" /> {render_slot(@inner_block)}
     </p>
     """
   end
@@ -315,13 +310,11 @@ defmodule GovernanceCoreWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
-          {render_slot(@inner_block)}
-        </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
-          {render_slot(@subtitle)}
-        </p>
+        <h1 class="text-lg font-semibold leading-8">{render_slot(@inner_block)}</h1>
+
+        <p :if={@subtitle != []} class="text-sm text-base-content/70">{render_slot(@subtitle)}</p>
       </div>
+
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -363,11 +356,11 @@ defmodule GovernanceCoreWeb.CoreComponents do
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-          <th :if={@action != []}>
-            <span class="sr-only">Actions</span>
-          </th>
+
+          <th :if={@action != []}><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
+
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -377,6 +370,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
+
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -410,6 +404,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
+
           <div>{render_slot(item)}</div>
         </div>
       </li>
@@ -492,8 +487,10 @@ defmodule GovernanceCoreWeb.CoreComponents do
                 <span class="text-xs">{String.at(@persona.name, 0)}</span>
               </div>
             </div>
+
             <div>
               <h3 class="font-bold text-sm">{@persona.name}</h3>
+
               <p class="text-xs opacity-60">{@persona.role}</p>
             </div>
           </div>
@@ -510,13 +507,18 @@ defmodule GovernanceCoreWeb.CoreComponents do
         </div>
 
         <div class="card-actions justify-end mt-4">
-          <div :if={@persona.access_group == :harezm} class="flex items-center gap-1 text-[10px] text-success">
-            <.icon name="hero-check-badge" class="size-3" />
-            <span>Harezm Internal</span>
+          <div
+            :if={@persona.access_group == :harezm}
+            class="flex items-center gap-1 text-[10px] text-success"
+          >
+            <.icon name="hero-check-badge" class="size-3" /> <span>Harezm Internal</span>
           </div>
-          <div :if={@persona.access_group == :external} class="flex items-center gap-1 text-[10px] text-warning">
-            <.icon name="hero-currency-dollar" class="size-3" />
-            <span>Marketplace (Paid)</span>
+
+          <div
+            :if={@persona.access_group == :external}
+            class="flex items-center gap-1 text-[10px] text-warning"
+          >
+            <.icon name="hero-currency-dollar" class="size-3" /> <span>Marketplace (Paid)</span>
           </div>
         </div>
       </div>
@@ -540,9 +542,7 @@ defmodule GovernanceCoreWeb.CoreComponents do
     assigns = assign(assigns, :class, Map.get(classes, to_string(assigns.status), "badge-info"))
 
     ~H"""
-    <span class={["badge badge-xs font-semibold uppercase", @class]}>
-      {@status}
-    </span>
+    <span class={["badge badge-xs font-semibold uppercase", @class]}>{@status}</span>
     """
   end
 
@@ -558,15 +558,19 @@ defmodule GovernanceCoreWeb.CoreComponents do
       <.icon name="hero-shield-check" class="size-6 shrink-0" />
       <div class="flex-1">
         <h3 class="font-bold text-sm">402 Payment Required (x402 Protocol)</h3>
+
         <div class="text-xs">
-          Persona <span class="font-mono">{@challenge.persona_name}</span> is requesting
-          <span class="font-bold">{@challenge.amount} USDC</span> for task:
-          <span class="italic">"{@challenge.task_name}"</span>
+          Persona <span class="font-mono">{@challenge.persona_name}</span>
+          is requesting <span class="font-bold">{@challenge.amount} USDC</span>
+          for task: <span class="italic">"{@challenge.task_name}"</span>
         </div>
       </div>
+
       <div class="flex-none gap-2">
         <button class="btn btn-sm btn-ghost">Dismiss</button>
-        <button class="btn btn-sm btn-primary" phx-click={@on_confirm}>Authorize (AP2 Mandate)</button>
+        <button class="btn btn-sm btn-primary" phx-click={@on_confirm}>
+          Authorize (AP2 Mandate)
+        </button>
       </div>
     </div>
     """

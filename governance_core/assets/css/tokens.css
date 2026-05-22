@@ -33,9 +33,9 @@
   --l: 30%;
 }
 [data-brand="eny"] {
-  --h: 72;
-  --s: 98%;
-  --l: 54%;
+  --h: 247;
+  --s: 67%;
+  --l: 59%;
 }
 [data-brand="agent"] {
   --h: 256;
@@ -70,6 +70,12 @@
   --primary-faded: hsla(var(--h), var(--s), var(--l), 0.15);
 }
 
+/* Dark Mode Readability Boost */
+[data-theme="dark"] {
+  --primary: hsl(var(--h), var(--s), calc(var(--l) + 25%));
+  --primary-faded: hsla(var(--h), var(--s), calc(var(--l) + 25%), 0.15);
+}
+
 [data-state="hover"]      { --l: calc(var(--l) + 4%); }
 [data-state="active"]     { --l: calc(var(--l) + 8%); }
 [data-state="processing"] {
@@ -93,7 +99,7 @@
 /* ENY Contrast Techniques (V7.1) */
 [data-theme="light"] {
   --eny-label-bg: #111;
-  --eny-label-text: hsl(72, 98%, 54%);
-  --eny-accent: hsl(72, 98%, 54%);
+  --eny-label-text: hsl(67, 67%, 59%);
+  --eny-accent: hsl(67, 67%, 59%);
   --eny-text-readable: #111;
 }

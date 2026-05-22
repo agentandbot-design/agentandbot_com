@@ -40,10 +40,15 @@ defmodule GovernanceCore.Agents do
   def search(query) when query in ["", nil], do: list_agents()
 
   def search(query) do
-    q = "%#{query}%"
+    q = "%#{String.downcase(query)}%"
 
     Persona
-    |> where([p], ilike(p.name, ^q) or ilike(p.role, ^q) or ilike(p.description, ^q))
+    |> where(
+      [p],
+      fragment("lower(coalesce(?, '')) LIKE ?", p.name, ^q) or
+        fragment("lower(coalesce(?, '')) LIKE ?", p.role, ^q) or
+        fragment("lower(coalesce(?, '')) LIKE ?", p.description, ^q)
+    )
     |> Repo.all()
   end
 
@@ -56,6 +61,7 @@ defmodule GovernanceCore.Agents do
       humans: Enum.count(agents, &(&1.sub_type == "human")),
       bots: Enum.count(agents, &(&1.sub_type == "bot")),
       active: Enum.count(agents, &(&1.status == "active")),
+      active_scenarios: 0,
       spend_cents: Repo.one(from p in Persona, select: sum(p.balance_cents)) || 0
     }
   end
@@ -94,10 +100,11 @@ defmodule GovernanceCore.Agents do
   def get_best_channel(%Persona{} = agent) do
     # Fallback Hierarchy: High-Fidelity -> Baseline
     cond do
-       Map.get(agent.metadata, "windmill_wf") -> :windmill
-       Map.get(agent.metadata, "telegram_id") -> :telegram
-       Map.get(agent.metadata, "email") -> :email
-       true -> :markdown # 30-second Identity Baseline
+      Map.get(agent.metadata, "windmill_wf") -> :windmill
+      Map.get(agent.metadata, "telegram_id") -> :telegram
+      Map.get(agent.metadata, "email") -> :email
+      # 30-second Identity Baseline
+      true -> :markdown
     end
   end
 end

@@ -18,7 +18,9 @@ defmodule GovernanceCore.Protocols.ClawSpeak do
   Decodes a binary frame into a ClawSpeak struct.
   Returns {:ok, struct, rest} if successful, or {:error, reason}.
   """
-  def decode(<<from::8, to::8, op::8, arg_len::8, arg::binary-size(arg_len), crc::32, rest::binary>>) do
+  def decode(
+        <<from::8, to::8, op::8, arg_len::8, arg::binary-size(arg_len), crc::32, rest::binary>>
+      ) do
     payload = <<from::8, to::8, op::8, arg_len::8, arg::binary>>
     expected_crc = :erlang.crc32(payload)
 
@@ -37,6 +39,7 @@ defmodule GovernanceCore.Protocols.ClawSpeak do
   """
   def encode(%__MODULE__{from: from, to: to, op: op, arg: arg}) when is_binary(arg) do
     arg_len = byte_size(arg)
+
     if arg_len > 255 do
       {:error, :arg_too_long}
     else

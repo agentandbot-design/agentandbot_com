@@ -1,0 +1,84 @@
+name: Jules — Continuous Code Review
+# Her gece otomatik kod review + her push'ta güvenlik check
+# Jules REST API: jules.googleapis.com/v1alpha
+# Auth: X-Goog-Api-Key
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Günlük 21:00 UTC = 00:00 TR
+    - cron: "0 21 * * *"
+    # Haftalık Pazartesi 07:00 UTC = 10:00 TR (güvenlik taraması)
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Jules'a özel görev (boş = günlük review)"
+        required: false
+        default: ""
+      title:
+        description: "Session başlığı"
+        required: false
+        default: "Automated Review"
+
+jobs:
+  jules-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine prompt
+        id: prompt
+        run: |
+          # Haftalık güvenlik taraması mı?
+          DAY=$(date +%u)  # 1=Mon, 7=Sun
+          HOUR=$(date +%H)
+
+          if [ "$DAY" = "1" ] && [ "$HOUR" = "07" ]; then
+            TASK_TITLE="Weekly Security Scan"
+            TASK_PROMPT="Haftalık güvenlik taraması:
+          1. Commit edilmiş .env veya secret var mı?
+          2. mix audit çalıştır — açık bağımlılık var mı?
+          3. Açık endpoint erişim kontrolsüz var mı?
+          Sorun varsa GitHub issue aç, label: security"
+          elif [ -n "${{ github.event.inputs.prompt }}" ]; then
+            TASK_TITLE="${{ github.event.inputs.title }}"
+            TASK_PROMPT="${{ github.event.inputs.prompt }}"
+          else
+            TASK_TITLE="Nightly Code Review"
+            TASK_PROMPT="Günlük kod review (Elixir/Phoenix):
+          1. Ecto changeset validasyonu eksik modül var mı?
+          2. LiveView güvensiz assign var mı?
+          3. Design System ihlali (bg #0B0F14, accent #3B82F6)?
+          4. OTP bloklama (GenServer.call zinciri) var mı?
+          5. Yeni modüllerin ExUnit testi yazılmış mı?
+          Sorun varsa GitHub issue aç, label: jules-found. Küçük fix ise direkt PR aç."
+          fi
+
+          echo "title=$TASK_TITLE" >> $GITHUB_OUTPUT
+          echo "prompt<<EOF" >> $GITHUB_OUTPUT
+          echo "$TASK_PROMPT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Jules Session
+        id: create_session
+        run: |
+          RESPONSE=$(curl -s -X POST \
+            "https://jules.googleapis.com/v1alpha/sessions" \
+            -H "X-Goog-Api-Key: ${{ secrets.JULES_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "title": "${{ steps.prompt.outputs.title }}",
+              "prompt": "PROJE: Elixir/Phoenix LiveView, Tailwind, bg #0B0F14\n\nGÖREV:\n${{ steps.prompt.outputs.prompt }}",
+              "sourceContext": {
+                "source": "sources/github/agentandbot-design/agentandbot_com",
+                "githubRepoContext": {"startingBranch": "main"}
+              },
+              "automationMode": "MANUAL"
+            }')
+
+          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+          SESSION_ID=$(echo $RESPONSE | jq -r '.id // "unknown"')
+          echo "session_id=$SESSION_ID" >> $GITHUB_OUTPUT
+          echo "✅ Jules session başlatıldı: $SESSION_ID"
+          echo "View: https://jules.google.com"

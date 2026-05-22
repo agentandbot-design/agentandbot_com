@@ -1,0 +1,320 @@
+
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.wrap { padding: 1rem 0; font-family: var(--font-sans); }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; align-items: center; }
+.search-input { padding: 7px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-size: 13px; width: 200px; }
+.filter-btn { padding: 5px 12px; border-radius: 16px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); font-size: 12px; cursor: pointer; }
+.filter-btn.active { background: #534AB7; color: #EEEDFE; border-color: #534AB7; }
+.stats { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.card-top { padding: 0.9rem 1rem 0; display: flex; gap: 10px; align-items: flex-start; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+.name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 2px; }
+.subtitle { font-size: 11px; color: var(--color-text-secondary); margin: 0 0 5px; }
+.tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.tag { font-size: 10px; padding: 1px 7px; border-radius: 8px; }
+.body { padding: 0.6rem 1rem 0.9rem; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 0.7rem; }
+.lbl { font-size: 10px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0.5rem 0 0.2rem; }
+.val { font-size: 12px; color: var(--color-text-primary); line-height: 1.5; margin: 0; }
+.prompt-box { background: var(--color-background-secondary); border-radius: 6px; padding: 7px 9px; font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; margin-top: 3px; font-family: var(--font-mono); }
+.copy-btn { float: right; font-size: 10px; padding: 2px 7px; border-radius: 5px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.pills { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.pill { font-size: 10px; padding: 1px 7px; border-radius: 8px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+.hidden { display: none; }
+.pager { display: flex; align-items: center; gap: 8px; margin-top: 1.2rem; flex-wrap: wrap; }
+.page-btn { padding: 5px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); font-size: 12px; cursor: pointer; }
+.page-btn.active { background: #534AB7; color: #EEEDFE; border-color: #534AB7; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Dünya genelinde AI persona kadrosu — her ülkeden 2 karakter</h2>
+
+<div class="controls">
+  <input class="search-input" id="search" placeholder="İsim veya ülke ara..." oninput="applyFilters()">
+  <button class="filter-btn active" data-reg="all" onclick="setRegion(this,'all')">Tümü</button>
+  <button class="filter-btn" data-reg="africa" onclick="setRegion(this,'africa')">Afrika</button>
+  <button class="filter-btn" data-reg="europe" onclick="setRegion(this,'europe')">Avrupa</button>
+  <button class="filter-btn" data-reg="asia" onclick="setRegion(this,'asia')">Asya</button>
+  <button class="filter-btn" data-reg="americas" onclick="setRegion(this,'americas')">Amerika</button>
+  <button class="filter-btn" data-reg="oceania" onclick="setRegion(this,'oceania')">Okyanusya</button>
+  <button class="filter-btn" data-reg="mideast" onclick="setRegion(this,'mideast')">Ortadoğu</button>
+</div>
+<div class="stats" id="stats"></div>
+<div class="grid" id="grid"></div>
+<div class="pager" id="pager"></div>
+</div>
+
+<script>
+const PAGE_SIZE = 12;
+let currentPage = 1;
+let activeRegion = 'all';
+let searchTerm = '';
+
+const ramps = [
+  {bg:'#534AB7',fg:'#EEEDFE'},{bg:'#185FA5',fg:'#E6F1FB'},{bg:'#0F6E56',fg:'#E1F5EE'},
+  {bg:'#D85A30',fg:'#FAECE7'},{bg:'#993C1D',fg:'#FAECE7'},{bg:'#72243E',fg:'#FBEAF0'},
+  {bg:'#3B6D11',fg:'#EAF3DE'},{bg:'#854F0B',fg:'#FAEEDA'},{bg:'#3C3489',fg:'#EEEDFE'},
+  {bg:'#0C447C',fg:'#E6F1FB'},{bg:'#085041',fg:'#E1F5EE'},{bg:'#A32D2D',fg:'#FCEBEB'},
+  {bg:'#5F5E5A',fg:'#F1EFE8'},{bg:'#BA7517',fg:'#FAEEDA'},{bg:'#639922',fg:'#EAF3DE'},
+  {bg:'#D4537E',fg:'#FBEAF0'},{bg:'#378ADD',fg:'#E6F1FB'},{bg:'#E24B4A',fg:'#FCEBEB'}
+];
+
+const all = [
+  // TURKEY (2)
+  {id:1,name:"Emre Çelik",age:34,country:"Türkiye",flag:"🇹🇷",region:"europe",role:"Yazılım Mimarı & Tech YouTuber",personality:"Hırslı, açık kaynak savunucusu, topluluk inşacısı.",content:"Backend mimarisi, Kubernetes, Türkçe DevOps içerikleri",social:["YouTube","GitHub","LinkedIn","Telegram"],email:"emre@firma.com",prompt:"Turkish man, 34, short dark hair, light stubble, wearing a dark green hoodie, sitting at a standing desk with multiple monitors showing terminal windows, tech influencer vibe, warm LED lighting, photorealistic 4K portrait"},
+  {id:2,name:"Nihan Özdemir",age:26,country:"Türkiye",flag:"🇹🇷",region:"europe",role:"E-ticaret Kategori Müdürü & TikTok Creator",personality:"Dinamik, trend odaklı, mizah yeteneği yüksek.",content:"Moda, lifestyle, Trendyol / Hepsiburada stratejileri",social:["TikTok","Instagram","Email"],email:"nihan@ecom.com",prompt:"Turkish woman, 26, long auburn highlighted hair, wearing a pastel pink oversized blazer, filming a TikTok in a bright minimal studio, ring light visible, joyful energetic expression, photorealistic 4K"},
+
+  // KENYA (2)
+  {id:3,name:"Amara Wanjiku",age:29,country:"Kenya",flag:"🇰🇪",region:"africa",role:"Fintech Product Manager & LinkedIn Influencer",personality:"Ambisius, veri odaklı, M-Pesa ekosistemini çok iyi bilen.",content:"Afrika fintech trendleri, mobil ödeme, startup ekosistemi",social:["LinkedIn","Twitter/X","Email","YouTube"],email:"amara@company.com",prompt:"Kenyan woman, 29, natural afro hair, wearing a bright orange blazer over a white shirt, sitting at a modern co-working space in Nairobi, confident smile, laptop open, photorealistic 4K portrait"},
+  {id:4,name:"Brian Otieno",age:41,country:"Kenya",flag:"🇰🇪",region:"africa",role:"SAP ERP Danışmanı & Webinar Host",personality:"Metodolojik, sabırlı, Afrika iş dünyasına yönelik pratik çözümler üretir.",content:"SAP FICO Afrika lokalizasyonu, ERP dönüşüm yolculukları",social:["LinkedIn","Email","Webinar"],email:"brian@sap.com",prompt:"Kenyan man, 41, short natural hair, wearing a navy blue business suit, standing in a bright Nairobi office with floor-to-ceiling windows, authoritative yet warm expression, photorealistic 4K portrait"},
+
+  // MOZAMBIQUE (2)
+  {id:5,name:"Fatima Machava",age:23,country:"Mozambik",flag:"🇲🇿",region:"africa",role:"Social Media Manager & Instagram Creator",personality:"Yaratıcı, hikaye anlatıcısı, Portekizce ve İngilizce içerik üretir.",content:"Mozambik kültürü, yerel e-ticaret, lifestyle",social:["Instagram","TikTok","Email"],email:"fatima@firma.com",prompt:"Mozambican woman, 23, braided hair with colorful beads, wearing a vibrant capulana-print blouse, standing in a sunny Maputo street market, joyful and creative expression, photorealistic 4K portrait"},
+  {id:6,name:"Carlos Muianga",age:37,country:"Mozambik",flag:"🇲🇿",region:"africa",role:"Yazılım Geliştirici & Tech Blogger",personality:"Çözüm odaklı, meraklı, sub-Saharan developer topluluğunun sesi.",content:"Python, mobile-first geliştirme, Afrika teknoloji ekosistemi",social:["GitHub","Twitter/X","LinkedIn","Email"],email:"carlos@dev.com",prompt:"Mozambican man, 37, short natural hair, wearing a casual grey t-shirt, sitting at a desk with code on screen, Maputo cityscape visible through window, calm focused expression, photorealistic 4K portrait"},
+
+  // USA (2)
+  {id:7,name:"Jordan Hayes",age:31,country:"ABD",flag:"🇺🇸",region:"americas",role:"Growth Hacker & YouTube Host",personality:"Hızlı düşünen, A/B test meraklısı, veriyi mizahla harmanlıyor.",content:"Dijital pazarlama, SaaS büyüme stratejileri, startup taktikleri",social:["YouTube","Twitter/X","Email","LinkedIn"],email:"jordan@company.com",prompt:"American man, 31, medium-length brown hair, wearing a casual navy blue henley, sitting in a minimalist home studio with podcast mic and LED panels, relaxed confident expression, photorealistic 4K portrait"},
+  {id:8,name:"Maya Johnson",age:44,country:"ABD",flag:"🇺🇸",region:"americas",role:"SAP Project Director & Podcast Host",personality:"Stratejik, liderlik odaklı, Fortune 500 deneyimli.",content:"SAP transformation, change management, women in tech liderlik",social:["LinkedIn","Podcast","Email","YouTube"],email:"maya@sap.com",prompt:"African American woman, 44, natural curly hair, wearing a sophisticated burgundy blazer, sitting at a glass desk in a corporate office, commanding and warm expression, professional lighting, photorealistic 4K portrait"},
+
+  // GERMANY (2)
+  {id:9,name:"Felix Bauer",age:38,country:"Almanya",flag:"🇩🇪",region:"europe",role:"SAP S/4HANA Architect & LinkedIn Thought Leader",personality:"Titiz, süreç odaklı, Alman mühendislik disipliniyle iş yapan.",content:"SAP S/4HANA mimarisi, proje yönetimi, Avrupa ERP trendleri",social:["LinkedIn","Email","Webinar","Podcast"],email:"felix@sap.com",prompt:"German man, 38, short blond hair, wearing a smart casual light grey blazer, standing in a modern Frankfurt office, serious but approachable expression, clean bright environment, photorealistic 4K portrait"},
+  {id:10,name:"Lena Hoffmann",age:27,country:"Almanya",flag:"🇩🇪",region:"europe",role:"UX Researcher & Instagram Creator",personality:"Empatik, kullanıcı merkezli, sürdürülebilirlik aktivisti.",content:"Design thinking, UX araştırma yöntemleri, ethical design",social:["Instagram","LinkedIn","Email","Medium"],email:"lena@dev.com",prompt:"German woman, 27, blonde bob haircut, wearing a sage green linen shirt, sitting at a minimalist white desk with sketchbook and tablet, thoughtful expression, natural window light, photorealistic 4K portrait"},
+
+  // BRAZIL (2)
+  {id:11,name:"Lucas Ferreira",age:30,country:"Brezilya",flag:"🇧🇷",region:"americas",role:"E-Commerce Lead & TikTok Creator",personality:"Karizmatik, enerjik, Brezilya e-ticaret pazarının nabzını tutuyor.",content:"Mercado Libre, Brazilian dropshipping, sosyal ticaret",social:["TikTok","Instagram","YouTube","Email"],email:"lucas@ecom.com",prompt:"Brazilian man, 30, medium curly dark hair, wearing a bright tropical-print short-sleeve shirt, filming content in a vibrant São Paulo studio, big smile, ring light, photorealistic 4K portrait"},
+  {id:12,name:"Ana Souza",age:35,country:"Brezilya",flag:"🇧🇷",region:"americas",role:"Full Stack Developer & YouTube Educator",personality:"Öğretici, sabırlı, Portekizce teknoloji içeriğinin öncüsü.",content:"React, TypeScript, Brezilya startup ekosistemi, kariyer tavsiyeleri",social:["YouTube","GitHub","LinkedIn","Email"],email:"ana@dev.com",prompt:"Brazilian woman, 35, long dark wavy hair, wearing a casual violet hoodie, sitting at a developer workspace with dual monitors and plants, warm and knowledgeable expression, photorealistic 4K portrait"},
+
+  // INDIA (2)
+  {id:13,name:"Rohan Mehta",age:28,country:"Hindistan",flag:"🇮🇳",region:"asia",role:"AI Engineer & YouTube Creator",personality:"Analitik, hırslı, Hindistan teknoloji ihracının simgesi.",content:"LLM fine-tuning, AI agent mimarileri, Python projeleri",social:["YouTube","GitHub","LinkedIn","Email"],email:"rohan@dev.com",prompt:"Indian man, 28, short dark hair, wearing a smart casual checked shirt, sitting in a Bangalore tech office with glass walls, focused and enthusiastic expression, photorealistic 4K portrait"},
+  {id:14,name:"Kavya Nair",age:33,country:"Hindistan",flag:"🇮🇳",region:"asia",role:"E-Commerce Stratejisti & Instagram Influencer",personality:"Güçlü iletişimci, D2C marka oluşturma uzmanı.",content:"Flipkart / Amazon India stratejileri, D2C büyüme, personal branding",social:["Instagram","LinkedIn","Email","Podcast"],email:"kavya@ecom.com",prompt:"Indian woman, 33, long black hair with jasmine flowers, wearing a contemporary kurta in teal, sitting at a stylish home office with plants and natural light, confident and warm, photorealistic 4K portrait"},
+
+  // NIGERIA (2)
+  {id:15,name:"Chidi Okonkwo",age:39,country:"Nijerya",flag:"🇳🇬",region:"africa",role:"Fintech Founder & Twitter/X Voice",personality:"Vizyoner, keskin zekâlı, Afrika fintech devrimi için mücadele ediyor.",content:"Blockchain, Afrika fintech politikası, girişimcilik",social:["Twitter/X","LinkedIn","Email","YouTube"],email:"chidi@company.com",prompt:"Nigerian man, 39, close-cropped natural hair, wearing a bold Ankara-print jacket over a white shirt, sitting in a Lagos startup office, confident visionary expression, modern African aesthetic, photorealistic 4K portrait"},
+  {id:16,name:"Adaeze Eze",age:25,country:"Nijerya",flag:"🇳🇬",region:"africa",role:"Content Creator & E-Commerce Manager",personality:"Yaratıcı, özgün, Nollywood estetğiyle Afrikalı markalar inşa ediyor.",content:"Nigerian fashion e-commerce, Afrobeat lifestyle, sosyal ticaret",social:["Instagram","TikTok","Email"],email:"adaeze@ecom.com",prompt:"Nigerian woman, 25, long braided hair with gold accessories, wearing a vibrant Ankara wrap dress, standing in a bright Lagos photo studio, radiant and stylish expression, photorealistic 4K portrait"},
+
+  // JAPAN (2)
+  {id:17,name:"Kenji Nakamura",age:45,country:"Japonya",flag:"🇯🇵",region:"asia",role:"SAP Senior Consultant & Podcast Host",personality:"Hassas, disiplinli, Japon iş kültürü ile global standartları harmanlıyor.",content:"SAP Japonya lokalizasyonu, kaizen ile ERP, kurumsal dönüşüm",social:["LinkedIn","Podcast","Email"],email:"kenji@sap.com",prompt:"Japanese man, 45, neat short black hair with slight gray, wearing a dark charcoal suit and conservative tie, standing in a Tokyo high-rise office, calm and meticulous expression, city skyline behind, photorealistic 4K portrait"},
+  {id:18,name:"Hana Yoshida",age:24,country:"Japonya",flag:"🇯🇵",region:"asia",role:"UI Designer & TikTok Creator",personality:"Minimalist estetik tutkunu, kawaii ile modernliği harmanlayan yaratıcı.",content:"UI/UX Japonya trendleri, Figma kısa dersleri, tasarım ilham videoları",social:["TikTok","Instagram","Behance","Email"],email:"hana@dev.com",prompt:"Japanese woman, 24, straight black hair with blunt bangs, wearing a white minimal shirt with a subtle graphic, sitting at a pastel-toned design desk with Figma on screen, soft natural lighting, clean aesthetic, photorealistic 4K portrait"},
+
+  // FRANCE (2)
+  {id:19,name:"Pierre Leblanc",age:42,country:"Fransa",flag:"🇫🇷",region:"europe",role:"E-Commerce Director & LinkedIn Thought Leader",personality:"Stratejik, zarif, Avrupa lüks e-ticaret ekosisteminde otorite.",content:"Lüks e-ticaret, Avrupa pazarlama trendleri, D2C strateji",social:["LinkedIn","Email","Podcast","Twitter/X"],email:"pierre@ecom.com",prompt:"French man, 42, stylish salt-and-pepper hair, wearing a well-cut navy blazer with an open collar, sitting in a chic Parisian office with art on walls, sophisticated and confident expression, photorealistic 4K portrait"},
+  {id:20,name:"Sophie Martin",age:31,country:"Fransa",flag:"🇫🇷",region:"europe",role:"Frontend Developer & YouTube Creator",personality:"Zarif kodcu, açık kaynak katkıcısı, Fransızca dev içerik üretiyor.",content:"Vue.js, CSS sanatı, Fransızca frontend dersleri",social:["YouTube","GitHub","Twitter/X","Email"],email:"sophie@dev.com",prompt:"French woman, 31, chic short brown hair with subtle highlights, wearing a striped Breton shirt, sitting at a Parisian café with laptop and coffee, casual intellectual expression, photorealistic 4K portrait"},
+
+  // CHINA (2)
+  {id:21,name:"Wei Zhang",age:36,country:"Çin",flag:"🇨🇳",region:"asia",role:"E-Commerce Operations Head & WeChat KOL",personality:"Verimlilik odaklı, çok kanallı ticaret uzmanı, global pazara köprü.",content:"Alibaba / JD.com stratejileri, cross-border ticaret, Çin pazarı analizi",social:["LinkedIn","Email","WeChat","YouTube"],email:"wei@ecom.com",prompt:"Chinese man, 36, neat short black hair, wearing a smart casual white shirt in a modern Shanghai e-commerce warehouse office, professional and energetic expression, photorealistic 4K portrait"},
+  {id:22,name:"Li Xiu",age:28,country:"Çin",flag:"🇨🇳",region:"asia",role:"AI Developer & Bilibili Creator",personality:"Teknik derinliği olan, açık topluluklara katkı sunan araştırmacı.",content:"LLM uygulamaları, Python AI projeleri, Mandarin dev içerikleri",social:["Bilibili","GitHub","LinkedIn","Email"],email:"li@dev.com",prompt:"Chinese woman, 28, straight black hair, wearing a light grey technical fleece jacket, sitting at a minimalist research desk with code on multiple screens, calm focused expression, photorealistic 4K portrait"},
+
+  // SOUTH AFRICA (2)
+  {id:23,name:"Sipho Dlamini",age:33,country:"Güney Afrika",flag:"🇿🇦",region:"africa",role:"SAP Consultant & Podcast Host",personality:"Güçlü anlatıcı, Afrika kalkınma perspektifli ERP uzmanı.",content:"SAP Afrika rollout'ları, pan-Afrika iş stratejisi",social:["LinkedIn","Podcast","Email"],email:"sipho@sap.com",prompt:"South African man, 33, short natural hair, wearing a bold dashiki-inspired patterned blazer, sitting in a Cape Town office with Table Mountain visible, warm authoritative expression, photorealistic 4K portrait"},
+  {id:24,name:"Zanele Mokoena",age:22,country:"Güney Afrika",flag:"🇿🇦",region:"africa",role:"Social Media Manager & TikTok Creator",personality:"Kendinden emin, Z kuşağı sesi, Güney Afrika kültürünü dünyaya açan.",content:"Afrobeats lifestyle, Johannesburg street fashion, yerel marka hikayeleri",social:["TikTok","Instagram","Email"],email:"zanele@ecom.com",prompt:"South African woman, 22, colorful braids, wearing a streetwear outfit with bold geometric South African print, posing in a Johannesburg street art district, confident Gen-Z expression, photorealistic 4K portrait"},
+
+  // INDONESIA (2)
+  {id:25,name:"Budi Santoso",age:40,country:"Endonezya",flag:"🇮🇩",region:"asia",role:"SAP MM Specialist & LinkedIn Influencer",personality:"Pratik çözümler üreten, Güneydoğu Asya tedarik zinciri uzmanı.",content:"SAP MM APAC, tedarik zinciri dijitalleşmesi",social:["LinkedIn","Email","Webinar"],email:"budi@sap.com",prompt:"Indonesian man, 40, neat short black hair, wearing a smart batik-patterned shirt, sitting in a Jakarta corporate office, friendly and knowledgeable expression, photorealistic 4K portrait"},
+  {id:26,name:"Dewi Rahayu",age:27,country:"Endonezya",flag:"🇮🇩",region:"asia",role:"E-Commerce Creator & Instagram Influencer",personality:"Tatlı, özgün, Tokopedia ve Shopee ekosisteminin içindeki.",content:"Hijab fashion, halal e-ticaret, Endonezya lifestyle",social:["Instagram","TikTok","Email"],email:"dewi@ecom.com",prompt:"Indonesian woman, 27, wearing a modern hijab in dusty rose, stylish modest outfit, standing in a bright Jakarta content studio with ring light, warm and stylish expression, photorealistic 4K portrait"},
+
+  // MEXICO (2)
+  {id:27,name:"Diego Ramírez",age:32,country:"Meksika",flag:"🇲🇽",region:"americas",role:"Full Stack Developer & YouTube Creator",personality:"Esprili, pratik kodcu, LATAM developer topluluğunun köprüsü.",content:"Node.js, React, İspanyolca yazılım eğitimleri",social:["YouTube","GitHub","Twitter/X","Email"],email:"diego@dev.com",prompt:"Mexican man, 32, medium wavy dark hair, wearing a graphic tee under an open flannel shirt, sitting at a colorful home studio with Mexican art in background, humorous and friendly expression, photorealistic 4K portrait"},
+  {id:28,name:"Valentina Cruz",age:29,country:"Meksika",flag:"🇲🇽",region:"americas",role:"E-Commerce Manager & TikTok Creator",personality:"Enerjik, girişimci, Meksika dijital ticaretinde yükselen ses.",content:"Mercado Libre stratejisi, Meksika trendi ürünler, KOBİ büyümesi",social:["TikTok","Instagram","Email"],email:"valentina@ecom.com",prompt:"Mexican woman, 29, long dark hair with highlights, wearing a vibrant floral blouse, filming TikTok content in a colorful Mexico City studio, joyful and energetic expression, photorealistic 4K portrait"},
+
+  // UK (2)
+  {id:29,name:"James Okafor",age:38,country:"İngiltere",flag:"🇬🇧",region:"europe",role:"SAP Programme Manager & LinkedIn Creator",personality:"Profesyonel, kapsayıcı lider, çok kültürlü ekiplerle çalışan.",content:"SAP büyük ölçekli programlar, DEI liderlik, UK iş dünyası",social:["LinkedIn","Email","Podcast"],email:"james@sap.com",prompt:"British-Nigerian man, 38, short natural hair, wearing a sophisticated charcoal suit with a pocket square, standing in a London City office, confident and inclusive expression, photorealistic 4K portrait"},
+  {id:30,name:"Isla Cameron",age:24,country:"İngiltere",flag:"🇬🇧",region:"europe",role:"Tech Startup Founder & Twitter/X Voice",personality:"Hızlı düşünen, cesur, Londra startup sahnesinin genç sesi.",content:"Early stage startup taktikleri, B2B SaaS, VC ilişkileri",social:["Twitter/X","LinkedIn","Email","Podcast"],email:"isla@dev.com",prompt:"Scottish British woman, 24, short red hair, wearing a smart minimal black turtleneck, sitting at a Shoreditch co-working space, sharp and ambitious expression, photorealistic 4K portrait"},
+
+  // ARGENTINA (2)
+  {id:31,name:"Martín Gómez",age:43,country:"Arjantin",flag:"🇦🇷",region:"americas",role:"E-Commerce Director & YouTube Host",personality:"Tutkulu, analitik, LATAM e-ticaret liderliğinde söz sahibi.",content:"MeLi büyüme stratejisi, Arjantin enflasyon ortamında e-ticaret",social:["YouTube","LinkedIn","Email"],email:"martin@ecom.com",prompt:"Argentine man, 43, dark wavy hair with gray, wearing a casual smart blazer over a light shirt, recording in a Buenos Aires home office with good lighting, experienced and passionate expression, photorealistic 4K portrait"},
+  {id:32,name:"Lucía Fernández",age:26,country:"Arjantin",flag:"🇦🇷",region:"americas",role:"UX Designer & Instagram Creator",personality:"Sanatsal, idealist, Latin America tasarım sahnesini global platforma taşıyan.",content:"Latin design estetiği, Figma ileri seviye, UX kariyer yolculuğu",social:["Instagram","Behance","LinkedIn","Email"],email:"lucia@dev.com",prompt:"Argentine woman, 26, curly dark hair, wearing a colorful geometric-pattern blouse, sitting at a creative Buenos Aires studio desk with design work pinned on wall, artistic and expressive expression, photorealistic 4K portrait"},
+
+  // EGYPT (2)
+  {id:33,name:"Omar Hassan",age:35,country:"Mısır",flag:"🇪🇬",region:"mideast",role:"SAP Consultant & Arabic YouTube Educator",personality:"Kapsamlı anlatıcı, Arap dünyasına yönelik SAP içeriğinin öncüsü.",content:"SAP Arapça içerikler, MENA bölgesi ERP uygulamaları",social:["YouTube","LinkedIn","Email"],email:"omar@sap.com",prompt:"Egyptian man, 35, short dark hair and trimmed beard, wearing a smart white dress shirt, sitting in a Cairo office with modern decor, knowledgeable and confident expression, photorealistic 4K portrait"},
+  {id:34,name:"Nour El-Din",age:22,country:"Mısır",flag:"🇪🇬",region:"mideast",role:"Full Stack Developer & TikTok Creator",personality:"Zeki, hızlı öğrenen, Arap Z kuşağının teknoloji sesi.",content:"JavaScript, freelance geliştirici rehberleri, MENA kariyer ipuçları",social:["TikTok","GitHub","Twitter/X","Email"],email:"nour@dev.com",prompt:"Egyptian woman, 22, wavy dark hair, wearing a casual bright-colored hoodie, sitting at a home desk with code on screen in Cairo apartment, energetic and young expression, photorealistic 4K portrait"},
+
+  // GHANA (2)
+  {id:35,name:"Kwame Asante",age:30,country:"Gana",flag:"🇬🇭",region:"africa",role:"Software Developer & YouTube Creator",personality:"İlham verici, mentor kimlikli, Afrika developer gençliğine yol gösteriyor.",content:"JavaScript Afrika topluluğu, React öğreticileri, tech career Accra",social:["YouTube","GitHub","LinkedIn","Email"],email:"kwame@dev.com",prompt:"Ghanaian man, 30, short natural hair, wearing a kente-inspired colorful shirt, sitting at a bright Accra co-working space, warm inspiring smile, photorealistic 4K portrait"},
+  {id:36,name:"Ama Boateng",age:37,country:"Gana",flag:"🇬🇭",region:"africa",role:"E-Commerce Entrepreneur & Instagram Creator",personality:"Girişimci ruhu güçlü, Gana el sanatları ile global e-ticaretin sentezi.",content:"Afrika handmade e-ticaret, Etsy global strateji, Ghanaian fashion",social:["Instagram","Email","LinkedIn"],email:"ama@ecom.com",prompt:"Ghanaian woman, 37, head wrap in vibrant kente colors, wearing a beautifully tailored African print dress, standing in a colorful Accra artisan studio, proud entrepreneurial expression, photorealistic 4K portrait"},
+
+  // SWEDEN (2)
+  {id:37,name:"Erik Lindqvist",age:50,country:"İsveç",flag:"🇸🇪",region:"europe",role:"SAP Enterprise Architect & Conference Speaker",personality:"Vizyoner, sakin lider, İskandinav iş kültürünün temsilcisi.",content:"SAP clean core stratejisi, digital transformation leadership",social:["LinkedIn","Webinar","Email","Podcast"],email:"erik@sap.com",prompt:"Swedish man, 50, short silver hair, wearing a minimalist Scandinavian dark blazer, standing at a Stockholm conference hall stage, confident and visionary expression, photorealistic 4K portrait"},
+  {id:38,name:"Maja Svensson",age:25,country:"İsveç",flag:"🇸🇪",region:"europe",role:"Green Tech Developer & GitHub Contributor",personality:"Sürdürülebilirlik odaklı, idealist kodcu, iklim teknolojisi savunucusu.",content:"Yeşil yazılım, enerji verimli kodlama, İskandinav startup ekosistemi",social:["GitHub","LinkedIn","Twitter/X","Email"],email:"maja@dev.com",prompt:"Swedish woman, 25, blonde hair in loose braid, wearing a sustainable brand earth-tone puffer jacket, sitting at a Stockholm startup office with plants everywhere, eco-conscious and bright expression, photorealistic 4K portrait"},
+
+  // SOUTH KOREA (2)
+  {id:39,name:"Ji-ho Park",age:29,country:"Güney Kore",flag:"🇰🇷",region:"asia",role:"E-Commerce Tech Lead & YouTube Creator",personality:"Hızlı, innovasyon tutkunu, K-commerce trendlerini dünyaya açan.",content:"Coupang ekosistemi, Kore beauty e-ticaret, teknoloji ürün incelemeleri",social:["YouTube","Instagram","Email","LinkedIn"],email:"jiho@ecom.com",prompt:"Korean man, 29, stylish two-block haircut, wearing a trendy Korean streetwear outfit, filming YouTube content in a Seoul home studio with neon lights and tech gadgets, cool and energetic expression, photorealistic 4K portrait"},
+  {id:40,name:"Soo-Yeon Kim",age:34,country:"Güney Kore",flag:"🇰🇷",region:"asia",role:"UX Lead & Instagram Design Creator",personality:"Mükemmeliyetçi, estetik odaklı, K-design estetiğinin global elçisi.",content:"Kore UI trendleri, design system mimarisi, UX vaka çalışmaları",social:["Instagram","Behance","LinkedIn","Email"],email:"sooyeon@dev.com",prompt:"Korean woman, 34, sleek straight black hair, wearing a clean minimalist white and beige outfit, sitting at a pristine Seoul design studio, calm and elegant expression, photorealistic 4K portrait"},
+
+  // PORTUGAL (2)
+  {id:41,name:"Miguel Costa",age:36,country:"Portekiz",flag:"🇵🇹",region:"europe",role:"SAP Consultant & LinkedIn Creator",personality:"Köprü kurucu, Lusophone dünyaya yönelik SAP içerikleri üretiyor.",content:"SAP Portekiz / Brezilya lokalizasyonu, EMEA dönüşümleri",social:["LinkedIn","Email","YouTube"],email:"miguel@sap.com",prompt:"Portuguese man, 36, wavy dark brown hair, wearing a casual smart blazer, sitting in a Lisbon riverside office with natural light, warm and approachable expression, photorealistic 4K portrait"},
+  {id:42,name:"Inês Rodrigues",age:24,country:"Portekiz",flag:"🇵🇹",region:"europe",role:"Frontend Developer & TikTok Creator",personality:"Yaratıcı, dijital göçebe, Portekizce teknoloji içeriğinin yeni sesi.",content:"CSS sanatı, frontend eğitimleri, remote work lifestyle Lizbon",social:["TikTok","GitHub","Twitter/X","Email"],email:"ines@dev.com",prompt:"Portuguese woman, 24, long dark wavy hair, wearing a colorful graphic tee, sitting at a Lisbon café with laptop and coffee, creative and nomadic expression, photorealistic 4K portrait"},
+
+  // ETHIOPIA (2)
+  {id:43,name:"Abel Girma",age:28,country:"Etiyopya",flag:"🇪🇹",region:"africa",role:"Fintech Developer & Twitter/X Voice",personality:"Analitik, yenilikçi, Etiyopya dijital ekonomisinin gençliği.",content:"Etiyopya fintech ekosistemi, mobile banking, Afrika startup hikayeleri",social:["Twitter/X","LinkedIn","GitHub","Email"],email:"abel@dev.com",prompt:"Ethiopian man, 28, short natural hair, wearing a casual button-up shirt in earth tones, sitting at an Addis Ababa tech hub, ambitious and sharp expression, photorealistic 4K portrait"},
+  {id:44,name:"Tigist Haile",age:32,country:"Etiyopya",flag:"🇪🇹",region:"africa",role:"E-Commerce Manager & Instagram Creator",personality:"Özgün, girişimci, Etiyopya tekstil ve el sanatlarını global pazara sunuyor.",content:"Ethiopian fashion e-commerce, habesha lifestyle, Afrika KOBİ büyümesi",social:["Instagram","Email","TikTok"],email:"tigist@ecom.com",prompt:"Ethiopian woman, 32, natural braided hair with traditional habesha accessories, wearing a modern reinterpretation of a habesha kemis dress, standing in an Addis Ababa boutique studio, proud and elegant expression, photorealistic 4K portrait"},
+
+  // NETHERLANDS (2)
+  {id:45,name:"Daan van der Berg",age:41,country:"Hollanda",flag:"🇳🇱",region:"europe",role:"SAP Solution Architect & Podcast Host",personality:"Pragmatik, direkt, Dutch directness ile problem çözüyor.",content:"SAP cloud çözümleri, Hollanda lojistik & ERP entegrasyonu",social:["LinkedIn","Podcast","Email"],email:"daan@sap.com",prompt:"Dutch man, 41, light brown hair, wearing a smart casual open-collar shirt, sitting in an Amsterdam modern office by a canal window, direct and pragmatic expression, photorealistic 4K portrait"},
+  {id:46,name:"Emma de Groot",age:28,country:"Hollanda",flag:"🇳🇱",region:"europe",role:"Data Scientist & LinkedIn Creator",personality:"Analitik, meraklı, veri bilimiyle iş dünyasının kesişim noktasında.",content:"Python veri analizi, makine öğrenmesi iş uygulamaları, veri kariyer yolculuğu",social:["LinkedIn","GitHub","Email","Twitter/X"],email:"emma@dev.com",prompt:"Dutch woman, 28, short blond hair, wearing a minimalist white blouse, sitting at an Amsterdam data office with large screens showing charts, analytical and bright expression, photorealistic 4K portrait"},
+
+  // CANADA (2)
+  {id:47,name:"Noah Tremblay",age:34,country:"Kanada",flag:"🇨🇦",region:"americas",role:"Cloud Architect & YouTube Creator",personality:"Sakin, derinlikli, AWS ve Azure ekosisteminin güvenilir öğretmeni.",content:"Multi-cloud mimari, DevOps en iyi pratikler, Kanada tech sahası",social:["YouTube","LinkedIn","GitHub","Email"],email:"noah@dev.com",prompt:"Canadian man, 34, medium brown hair, wearing a cozy flannel shirt, sitting at a Vancouver home office with mountain view, calm and knowledgeable expression, photorealistic 4K portrait"},
+  {id:48,name:"Zara Ahmed",age:27,country:"Kanada",flag:"🇨🇦",region:"americas",role:"E-Commerce Strategist & TikTok Creator",personality:"Çok kültürlü perspektifli, cesur, Kanada çeşitliliğini markalaştıran.",content:"Shopify strateji, Kanada e-ticaret hukuku, multicultural marketing",social:["TikTok","Instagram","LinkedIn","Email"],email:"zara@ecom.com",prompt:"Canadian Pakistani woman, 27, dark hair with highlights, wearing a modern fusion outfit combining Western and South Asian elements, in a bright Toronto content studio, vibrant multicultural expression, photorealistic 4K portrait"},
+
+  // SPAIN (2)
+  {id:49,name:"Alejandro García",age:39,country:"İspanya",flag:"🇪🇸",region:"europe",role:"SAP SD/MM Expert & LinkedIn Influencer",personality:"Detaycı, güvenilir, İspanya ve LATAM SAP köprüsü.",content:"SAP satış & dağıtım, İspanya şirketleri için dijital dönüşüm",social:["LinkedIn","Email","Webinar"],email:"alejandro@sap.com",prompt:"Spanish man, 39, dark hair with slight wave, wearing a smart navy blazer over a light patterned shirt, sitting in a Madrid office, confident and knowledgeable expression, photorealistic 4K portrait"},
+  {id:50,name:"Carmen López",age:23,country:"İspanya",flag:"🇪🇸",region:"europe",role:"Social Media & E-Commerce Creator",personality:"Tutkulu, özgün, İspanyol yaşam tarzını dijital ticarete taşıyor.",content:"Moda e-ticaret, Zara / Mango ekosistemi, Avrupa influencer pazarlama",social:["Instagram","TikTok","Email"],email:"carmen@ecom.com",prompt:"Spanish woman, 23, long dark curly hair, wearing a vibrant red Spanish-inspired outfit, posing in a Barcelona street with colorful architecture, passionate and stylish expression, photorealistic 4K portrait"},
+
+  // AUSTRALIA (2)
+  {id:51,name:"Liam O'Brien",age:36,country:"Avustralya",flag:"🇦🇺",region:"oceania",role:"SAP Project Manager & Podcast Host",personality:"Rahat ama profesyonel, APAC bölgesi SAP uygulamalarında deneyimli.",content:"SAP APAC rollout, proje yönetimi, Avustralya iş kültürü",social:["LinkedIn","Podcast","Email"],email:"liam@sap.com",prompt:"Australian man, 36, sandy brown hair, wearing a relaxed but professional open-collar shirt, sitting in a Sydney harbor-view office, easy-going yet competent expression, photorealistic 4K portrait"},
+  {id:52,name:"Chloe Nguyen",age:25,country:"Avustralya",flag:"🇦🇺",region:"oceania",role:"Frontend Developer & YouTube Creator",personality:"Neşeli, pratik, Avustralya çok kültürlü tech sahnesinin genç sesi.",content:"React öğreticileri, Avustralya junior dev rehberi, kariyer hikayeleri",social:["YouTube","GitHub","Twitter/X","Email"],email:"chloe@dev.com",prompt:"Australian Vietnamese woman, 25, straight black hair, wearing a bright yellow graphic tee, sitting at a Melbourne café with laptop, cheerful and energetic expression, photorealistic 4K portrait"},
+
+  // SAUDI ARABIA (2)
+  {id:53,name:"Fahad Al-Rashid",age:38,country:"Suudi Arabistan",flag:"🇸🇦",region:"mideast",role:"SAP Consultant & Arabic Podcast Host",personality:"Resmi ama ulaşılabilir, Vision 2030 ekosisteminde SAP uzmanı.",content:"SAP Vision 2030 projeleri, Arapça ERP içerikleri, MENA dönüşümü",social:["LinkedIn","Podcast","Email"],email:"fahad@sap.com",prompt:"Saudi man, 38, trimmed black beard, wearing a crisp white thobe, sitting at a modern Riyadh tech office, respectful and knowledgeable expression, photorealistic 4K portrait"},
+  {id:54,name:"Lujain Al-Harbi",age:27,country:"Suudi Arabistan",flag:"🇸🇦",region:"mideast",role:"E-Commerce Manager & Instagram Creator",personality:"Modern, girişimci, Suudi kadın iş dünyasının ilham veren yeni sesi.",content:"Suudi e-ticaret trendi, Vision 2030 fırsatları, moda & beauty",social:["Instagram","LinkedIn","Email"],email:"lujain@ecom.com",prompt:"Saudi woman, 27, wearing a modern abaya with subtle geometric pattern in charcoal, stylish headscarf, standing in a Riyadh modern mall, confident and modern expression, photorealistic 4K portrait"},
+
+  // UKRAINE (2)
+  {id:55,name:"Oleksiy Kovalenko",age:31,country:"Ukrayna",flag:"🇺🇦",region:"europe",role:"Full Stack Developer & YouTube Creator",personality:"Dayanıklı, yetenekli, Ukrayna tech ihracının temsilcisi.",content:"React, TypeScript, uzaktan çalışma, Ukrayna developer ekosistemi",social:["YouTube","GitHub","LinkedIn","Email"],email:"oleksiy@dev.com",prompt:"Ukrainian man, 31, short brown hair, wearing a casual dark hoodie, sitting at a home desk with multiple monitors, determined and skilled expression, soft lamp lighting, photorealistic 4K portrait"},
+  {id:56,name:"Darya Bondarenko",age:24,country:"Ukrayna",flag:"🇺🇦",region:"europe",role:"UI/UX Designer & TikTok Creator",personality:"Yaratıcı, cesur, Ukrayna tasarım sahnesini dünya platformlarına taşıyor.",content:"UI animasyon, Figma ileri seviye, Ukrayna genç tasarımcı hikayeleri",social:["TikTok","Instagram","Behance","Email"],email:"darya@dev.com",prompt:"Ukrainian woman, 24, dyed teal-tipped hair, wearing a vibrant creative outfit, sitting at a Kyiv design studio with Ukrainian folk art prints on wall, creative and resilient expression, photorealistic 4K portrait"},
+
+  // VIETNAM (2)
+  {id:57,name:"Minh Nguyen",age:30,country:"Vietnam",flag:"🇻🇳",region:"asia",role:"E-Commerce Operations Lead & YouTube Creator",personality:"Hızlı ve pratik, Vietnam dijital ticaretini bölgenin zirvesine çıkaran.",content:"Shopee / Lazada Vietnam stratejisi, viral pazarlama, ASEAN e-ticaret",social:["YouTube","Facebook","Email","LinkedIn"],email:"minh@ecom.com",prompt:"Vietnamese man, 30, short neat black hair, wearing a casual smart shirt, sitting in a Ho Chi Minh City modern office, energetic and entrepreneurial expression, photorealistic 4K portrait"},
+  {id:58,name:"Linh Pham",age:26,country:"Vietnam",flag:"🇻🇳",region:"asia",role:"Frontend Developer & TikTok Creator",personality:"Yetenekli, tatlı dilli, Vietnam genç developer topluluğunun öne çıkan sesi.",content:"CSS animasyonlar, TikTok kod içerikleri, Vietnamca frontend öğreticiler",social:["TikTok","GitHub","Email"],email:"linh@dev.com",prompt:"Vietnamese woman, 26, long straight black hair, wearing a colorful ao dai-inspired modern top, sitting at a Hanoi co-working space, cheerful and talented expression, photorealistic 4K portrait"},
+
+  // POLAND (2)
+  {id:59,name:"Piotr Kowalski",age:44,country:"Polonya",flag:"🇵🇱",region:"europe",role:"SAP Basis Admin & YouTube Educator",personality:"Teknik derinlikli, güvenilir, Orta Avrupa SAP uzmanlarının referans noktası.",content:"SAP Basis yönetimi, system admin ipuçları, Polonya ERP pazarı",social:["YouTube","LinkedIn","Email"],email:"piotr@sap.com",prompt:"Polish man, 44, short gray-blond hair, wearing a functional casual shirt, sitting at a Kraków server room adjacent office, meticulous and expert expression, photorealistic 4K portrait"},
+  {id:60,name:"Zofia Wiśniewska",age:28,country:"Polonya",flag:"🇵🇱",region:"europe",role:"Data Analyst & LinkedIn Creator",personality:"Akıllı, verimli, Polonya tech startup ekosisteminin analitik sesi.",content:"SQL, Python veri analizi, Polonya kariyer rehberleri, kadın tech liderliği",social:["LinkedIn","GitHub","Email","Twitter/X"],email:"zofia@dev.com",prompt:"Polish woman, 28, chestnut brown hair in a professional updo, wearing a smart blouse, sitting at a Warsaw startup office, sharp and analytical expression, photorealistic 4K portrait"},
+
+  // NEW ZEALAND (2)
+  {id:61,name:"Te Koha Tūhoe",age:35,country:"Yeni Zelanda",flag:"🇳🇿",region:"oceania",role:"Tech Lead & Community Builder",personality:"Mana taşıyan, Māori kültürünü teknoloji ile harmanlayan lider.",content:"Indigenous tech girişimleri, Yeni Zelanda software ekosistemi",social:["LinkedIn","Twitter/X","Email"],email:"tekoha@dev.com",prompt:"Māori New Zealand man, 35, dark curly hair, wearing a modern tee with subtle tā moko-inspired geometric design, standing at an Auckland tech office, strong and community-focused expression, photorealistic 4K portrait"},
+  {id:62,name:"Aroha Williams",age:22,country:"Yeni Zelanda",flag:"🇳🇿",region:"oceania",role:"Social Media Manager & TikTok Creator",personality:"Özgür ruhlu, yaratıcı, Pasifik kültürünü dijital dünyaya taşıyor.",content:"Yeni Zelanda lifestyle, Māori kültürü tanıtımı, sosyal ticaret",social:["TikTok","Instagram","Email"],email:"aroha@ecom.com",prompt:"Māori New Zealand woman, 22, dark wavy hair with a flower clip, wearing a casual colorful sundress with Pacific-inspired print, standing in an Auckland beach side content space, free-spirited and bright expression, photorealistic 4K portrait"},
+
+  // PAKISTAN (2)
+  {id:63,name:"Hassan Raza",age:33,country:"Pakistan",flag:"🇵🇰",region:"asia",role:"Software Engineer & YouTube Creator",personality:"Hırslı, özgün, Pakistan yazılım ihracının gurur kaynağı.",content:"Python, freelancing rehberleri, Urdu dev içerikleri, uzaktan iş ipuçları",social:["YouTube","GitHub","LinkedIn","Email"],email:"hassan@dev.com",prompt:"Pakistani man, 33, short black hair and trimmed beard, wearing a smart casual dark kurta, sitting at a Lahore co-working space with laptop, motivated and skilled expression, photorealistic 4K portrait"},
+  {id:64,name:"Ayesha Khan",age:26,country:"Pakistan",flag:"🇵🇰",region:"asia",role:"E-Commerce Manager & Instagram Creator",personality:"Güçlü, girişimci, Pakistan moda e-ticaretinin öncü genç yüzü.",content:"Pakistani fashion dropshipping, Daraz strateji, moda & lifestyle",social:["Instagram","TikTok","Email"],email:"ayesha@ecom.com",prompt:"Pakistani woman, 26, wearing a modern shalwar kameez in dusty rose with embroidery details, stylish dupatta, standing in a Karachi content studio, confident and stylish expression, photorealistic 4K portrait"},
+
+  // RUSSIA (2)
+  {id:65,name:"Alexei Sokolov",age:42,country:"Rusya",flag:"🇷🇺",region:"europe",role:"SAP Consultant & Telegram Channel Host",personality:"Analitik, kapsamlı, Rusya iş dünyası için pragmatik ERP çözümleri.",content:"SAP Rusya lokalizasyonu, 1C entegrasyonu, EAEU ERP trendleri",social:["Telegram","LinkedIn","Email"],email:"alexei@sap.com",prompt:"Russian man, 42, short dark hair graying slightly, wearing a conservative dark suit, sitting at a Moscow office, serious and technically expert expression, photorealistic 4K portrait"},
+  {id:66,name:"Ekaterina Volova",age:29,country:"Rusya",flag:"🇷🇺",region:"europe",role:"UX Designer & Telegram Creator",personality:"Yetenekli, stilistik, Rus tasarım ekolünün uluslararası sesi.",content:"UI/UX Rus okulu, Figma ileri teknikler, uluslararası uzak iş deneyimi",social:["Telegram","Behance","LinkedIn","Email"],email:"ekaterina@dev.com",prompt:"Russian woman, 29, light brown hair in elegant waves, wearing a minimalist dark blouse with subtle collar detail, sitting at a Moscow design studio, sophisticated and creative expression, photorealistic 4K portrait"},
+
+  // COLOMBIA (2)
+  {id:67,name:"Sebastián Morales",age:28,country:"Kolombiya",flag:"🇨🇴",region:"americas",role:"Full Stack Developer & YouTube Creator",personality:"Neşeli, pratik, Kolombiya tech ekosisteminin yükselen genç sesi.",content:"Node.js, Kolombiya startup trendi, İspanyolca yazılım eğitimleri",social:["YouTube","GitHub","Twitter/X","Email"],email:"sebastian@dev.com",prompt:"Colombian man, 28, medium dark curly hair, wearing a colorful casual shirt, sitting at a Medellín tech startup desk, vibrant and energetic expression, photorealistic 4K portrait"},
+  {id:68,name:"Isabella Vargas",age:34,country:"Kolombiya",flag:"🇨🇴",region:"americas",role:"E-Commerce Director & TikTok Creator",personality:"Stratejik, etkileyici, Kolombiya e-ticaret ihracını dünyaya açan.",content:"Colombia e-ticaret büyüme stratejisi, LATAM pazarlama, influencer ekonomisi",social:["TikTok","Instagram","LinkedIn","Email"],email:"isabella@ecom.com",prompt:"Colombian woman, 34, long dark hair with soft waves, wearing a vibrant floral Colombian-inspired blouse, standing in a Bogotá modern studio, charismatic and confident expression, photorealistic 4K portrait"},
+
+  // TANZANIA (2)
+  {id:69,name:"Juma Mwangi",age:31,country:"Tanzanya",flag:"🇹🇿",region:"africa",role:"Mobile Developer & Twitter/X Voice",personality:"Odaklı, pratik, Afrika mobil-first yaklaşımının savunucusu.",content:"Flutter, mobile-first Afrika uygulamaları, Swahili tech içerikleri",social:["Twitter/X","GitHub","LinkedIn","Email"],email:"juma@dev.com",prompt:"Tanzanian man, 31, short natural hair, wearing a colorful dashiki-style shirt, sitting at a Dar es Salaam tech hub, focused and determined expression, photorealistic 4K portrait"},
+  {id:70,name:"Amina Salim",age:25,country:"Tanzanya",flag:"🇹🇿",region:"africa",role:"Social Media Manager & Instagram Creator",personality:"Özgün, kültür elçisi, Zanzibar estetiğini dijital platformlara taşıyan.",content:"Swahili kültürü, Tanzania turizm e-ticareti, Afrika lifestyle",social:["Instagram","TikTok","Email"],email:"amina@ecom.com",prompt:"Tanzanian woman, 25, natural afro hair with decorative pins, wearing a vibrant kanga-print dress, standing in a colorful Zanzibar Stone Town backdrop, joyful and cultural expression, photorealistic 4K portrait"},
+
+  // IRAN (2)
+  {id:71,name:"Dariush Ahmadi",age:40,country:"İran",flag:"🇮🇷",region:"mideast",role:"SAP Consultant & Persian Podcast Host",personality:"Derin analitik, gelenekten modernliğe köprü kuran iş insanı.",content:"SAP Farsça içerikleri, İran iş dünyası ERP, MENA fırsatları",social:["Podcast","LinkedIn","Email"],email:"dariush@sap.com",prompt:"Iranian man, 40, short dark hair and neat beard, wearing a smart casual blazer over a turtleneck, sitting in a Tehran modern office, thoughtful and experienced expression, photorealistic 4K portrait"},
+  {id:72,name:"Shirin Moradi",age:27,country:"İran",flag:"🇮🇷",region:"mideast",role:"Frontend Developer & Instagram Creator",personality:"Yetenekli, yaratıcı, Farsça yazılım içeriğiyle fark yaratan.",content:"CSS / JavaScript Farsça eğitimler, İran developer topluluğu, kariyer hikayeleri",social:["Instagram","GitHub","Email"],email:"shirin@dev.com",prompt:"Iranian woman, 27, dark hair with highlights peeking beneath colorful headscarf, wearing a modern modest outfit with creative accessories, sitting at a Tehran co-working space, creative and determined expression, photorealistic 4K portrait"},
+
+  // ISRAEL (2)
+  {id:73,name:"Yael Cohen",age:32,country:"İsrail",flag:"🇮🇱",region:"mideast",role:"Product Manager & LinkedIn Creator",personality:"Hızlı düşünen, kullanıcı merkezli, Tel Aviv startup ruhunu taşıyan.",content:"Product management, startup metodolojileri, İsrail tech ekosistemi",social:["LinkedIn","Twitter/X","Email"],email:"yael@dev.com",prompt:"Israeli woman, 32, curly dark hair, wearing a smart casual blazer over a graphic tee, sitting at a Tel Aviv startup rooftop office, sharp and innovative expression, photorealistic 4K portrait"},
+  {id:74,name:"Roi Levi",age:29,country:"İsrail",flag:"🇮🇱",region:"mideast",role:"Cybersecurity Engineer & Twitter/X Voice",personality:"Dikkatli, stratejik, siber güvenlik alanında uluslararası ağ kuran.",content:"Cybersecurity trendleri, İsrail InfoSec ekosistemi, etik hacking eğitimi",social:["Twitter/X","LinkedIn","GitHub","Email"],email:"roi@dev.com",prompt:"Israeli man, 29, short dark curly hair, wearing a casual tech t-shirt, sitting at a Tel Aviv cybersecurity office with dark screens, sharp and analytical expression, photorealistic 4K portrait"},
+
+  // MOROCCO (2)
+  {id:75,name:"Youssef Benali",age:36,country:"Fas",flag:"🇲🇦",region:"africa",role:"SAP Consultant & Arabic YouTube Educator",personality:"Bağlantı kurucu, Fransızca ve Arapça içerik üreterek Kuzey Afrika SAP sahasını yönetiyor.",content:"SAP Kuzey Afrika, Fransızca ERP içerikleri, Magreb iş dünyası",social:["YouTube","LinkedIn","Email"],email:"youssef@sap.com",prompt:"Moroccan man, 36, short dark hair, wearing a smart blazer over a traditional-modern fusion shirt, sitting in a Casablanca business center, warm and educated expression, photorealistic 4K portrait"},
+  {id:76,name:"Fatimah El Fassi",age:23,country:"Fas",flag:"🇲🇦",region:"africa",role:"E-Commerce Creator & TikTok Influencer",personality:"Renkli, yaratıcı, Fas moda ve zanaatını global platforma taşıyan.",content:"Fas el sanatları e-ticaret, Marrakech estetik, Francophone Afrika lifestyle",social:["TikTok","Instagram","Email"],email:"fatimah@ecom.com",prompt:"Moroccan woman, 23, wearing a contemporary hijab with intricate pattern, modern caftan-inspired outfit in jewel tones, standing in a vibrant Marrakech medina backdrop, stylish and modern expression, photorealistic 4K portrait"},
+
+  // GREECE (2)
+  {id:77,name:"Nikos Papadopoulos",age:47,country:"Yunanistan",flag:"🇬🇷",region:"europe",role:"SAP Finance Consultant & Podcast Host",personality:"Geleneksel ama adaptif, Yunan iş dünyasında ERP dönüşümünü yönlendiren.",content:"SAP Greek localization, Güney Avrupa finans ERP, değişim yönetimi",social:["LinkedIn","Podcast","Email"],email:"nikos@sap.com",prompt:"Greek man, 47, silver-streaked hair, wearing a conservative dark suit, sitting in an Athens financial district office, experienced and trustworthy expression, photorealistic 4K portrait"},
+  {id:78,name:"Elena Georgiou",age:26,country:"Yunanistan",flag:"🇬🇷",region:"europe",role:"Digital Marketing Manager & Instagram Creator",personality:"Mediterrane enerjisi, yaratıcı, Yunan turizm e-ticaret sektöründe uzman.",content:"Yunan turizm e-ticaret, Santorini estetik içerikleri, Avrupa dijital pazarlama",social:["Instagram","TikTok","Email","LinkedIn"],email:"elena@ecom.com",prompt:"Greek woman, 26, dark curly Mediterranean hair, wearing a white linen summer dress, standing on a Santorini terrace with blue domes in background, radiant Mediterranean expression, photorealistic 4K portrait"},
+
+  // BANGLADESH (2)
+  {id:79,name:"Rahim Chowdhury",age:35,country:"Bangladeş",flag:"🇧🇩",region:"asia",role:"Software Engineer & YouTube Creator",personality:"Çalışkan, azimli, Bangladeş yazılım ihracının öncü yüzü.",content:"Java, Spring Boot, Bangladeş IT sektörü, kariyer rehberleri",social:["YouTube","GitHub","LinkedIn","Email"],email:"rahim@dev.com",prompt:"Bangladeshi man, 35, short black hair, wearing a casual checked shirt, sitting at a Dhaka tech company office, hardworking and determined expression, photorealistic 4K portrait"},
+  {id:80,name:"Nadia Islam",age:24,country:"Bangladeş",flag:"🇧🇩",region:"asia",role:"E-Commerce Manager & Facebook Creator",personality:"Girişimci, sosyal, Bangladeş tekstil ihracatını dijital dünyaya açan.",content:"Bangladeş tekstil e-ticaret, garment industry dijitalleşmesi, Facebook Commerce",social:["Facebook","Instagram","Email"],email:"nadia@ecom.com",prompt:"Bangladeshi woman, 24, wearing a colorful cotton salwar kameez, hair neatly arranged, standing in a Dhaka textile studio with fabric swatches, entrepreneurial and bright expression, photorealistic 4K portrait"},
+
+  // PERU (2)
+  {id:81,name:"Alejandro Quispe",age:39,country:"Peru",flag:"🇵🇪",region:"americas",role:"SAP Consultant & YouTube Educator",personality:"Kapsamlı, eğitici, Latin Amerika SAP dünyasında güvenilir isim.",content:"SAP Peru lokalizasyonu, İspanyolca SAP eğitimleri, Andean iş dünyası",social:["YouTube","LinkedIn","Email"],email:"alejandro@sap.com",prompt:"Peruvian man, 39, dark hair with slight wave, wearing a smart blazer, sitting in a Lima modern office, knowledgeable and trustworthy expression, photorealistic 4K portrait"},
+  {id:82,name:"Valentina Torres",age:27,country:"Peru",flag:"🇵🇪",region:"americas",role:"UI Designer & TikTok Creator",personality:"Yaratıcı, Peru'nun renk zenginliğini tasarıma yansıtan sanatçı-tasarımcı.",content:"Andean tasarım estetiği, UI renk teorisi, Peru kültürü ile modern tasarım",social:["TikTok","Instagram","Behance","Email"],email:"valentina@dev.com",prompt:"Peruvian woman, 27, dark braided hair with colorful woven accessories, wearing a modern outfit with vibrant Andean textile patterns, standing in a Lima design studio, artistic and culturally proud expression, photorealistic 4K portrait"},
+
+  // CZECH REPUBLIC (2)
+  {id:83,name:"Tomáš Novák",age:43,country:"Çekya",flag:"🇨🇿",region:"europe",role:"SAP Consultant & LinkedIn Educator",personality:"Sistematik, güvenilir, Orta Avrupa SAP ekosisteminin köklü ismi.",content:"SAP Çekya & Slovakya lokalizasyonu, Orta Avrupa ERP projeleri",social:["LinkedIn","Email","Webinar"],email:"tomas@sap.com",prompt:"Czech man, 43, short brown hair, wearing a smart business casual jacket, sitting in a Prague office with historic city view, methodical and trustworthy expression, photorealistic 4K portrait"},
+  {id:84,name:"Petra Svobodová",age:28,country:"Çekya",flag:"🇨🇿",region:"europe",role:"Backend Developer & GitHub Contributor",personality:"Hassas, detaycı, açık kaynak topluluğuna katkısıyla öne çıkan.",content:"Java backend, open source katkılar, Çekya developer sahası",social:["GitHub","LinkedIn","Email"],email:"petra@dev.com",prompt:"Czech woman, 28, straight dark brown hair, wearing a practical casual tech shirt, sitting at a Prague co-working space, focused and precise expression, photorealistic 4K portrait"},
+];
+
+let filtered = [...all];
+
+function setRegion(btn, reg) {
+  document.querySelectorAll('.filter-btn[data-reg]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeRegion = reg;
+  currentPage = 1;
+  applyFilters();
+}
+
+function applyFilters() {
+  const term = document.getElementById('search').value.toLowerCase();
+  searchTerm = term;
+  filtered = all.filter(p => {
+    const regionMatch = activeRegion === 'all' || p.region === activeRegion;
+    const searchMatch = !term || p.name.toLowerCase().includes(term) || p.country.toLowerCase().includes(term);
+    return regionMatch && searchMatch;
+  });
+  currentPage = 1;
+  render();
+}
+
+function copyPrompt(id) {
+  const p = all.find(x => x.id === id);
+  navigator.clipboard.writeText(p.prompt).then(() => {
+    const btn = document.getElementById('cp-' + id);
+    if (btn) { btn.textContent = 'Kopyalandı!'; setTimeout(() => { if(btn) btn.textContent = 'Kopyala'; }, 1500); }
+  });
+}
+
+function render() {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('stats').textContent = total + ' karakter gösteriliyor';
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = page.map((p, i) => {
+    const c = ramps[(p.id - 1) % ramps.length];
+    return `<div class="card">
+      <div class="card-top">
+        <div class="avatar" style="background:${c.bg};color:${c.fg}">${p.initials||p.name.split(' ').map(x=>x[0]).join('').slice(0,2)}</div>
+        <div style="flex:1">
+          <p class="name">${p.flag} ${p.name} <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">${p.age}</span></p>
+          <p class="subtitle">${p.role}</p>
+          <p class="subtitle">${p.country}</p>
+          <div class="tags">
+            <span class="tag" style="background:${c.bg}20;color:${c.bg}">${p.region==='africa'?'Afrika':p.region==='europe'?'Avrupa':p.region==='asia'?'Asya':p.region==='americas'?'Amerika':p.region==='oceania'?'Okyanusya':'Ortadoğu'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <p class="lbl">Kişilik</p>
+        <p class="val">${p.personality}</p>
+        <p class="lbl">İçerik</p>
+        <p class="val">${p.content}</p>
+        <p class="lbl">Platformlar</p>
+        <div class="pills">${p.social.map(s=>`<span class="pill">${s}</span>`).join('')}</div>
+        <p class="val" style="font-size:11px;margin-top:4px;color:var(--color-text-secondary)">${p.email}</p>
+        <p class="lbl">Görsel Prompt <button class="copy-btn" id="cp-${p.id}" onclick="copyPrompt(${p.id})">Kopyala</button></p>
+        <div class="prompt-box">${p.prompt}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const pager = document.getElementById('pager');
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Önceki</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Sonraki →</button>`;
+  pager.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  render();
+  window.scrollTo(0,0);
+}
+
+render();
+</script>
