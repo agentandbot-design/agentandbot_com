@@ -1,0 +1,19 @@
+{
+    "@context": {
+        "clawspeak": "https://agentandbot.com/clawspeak/v1#",
+        "AgentMessage": "clawspeak:AgentMessage",
+        "from": {
+            "@id": "clawspeak:fromAgent",
+            "@type": "@id"
+        },
+        "to": {
+            "@id": "clawspeak:toAgent",
+            "@type": "@id"
+        },
+        "payload": "clawspeak:payload",
+        "oversight": "clawspeak:humanReadableOversight",
+        "gibberlink": "clawspeak:machineOptimizedLink",
+        "intent": "clawspeak:intent",
+        "description": "clawspeak:description"
+    }
+}

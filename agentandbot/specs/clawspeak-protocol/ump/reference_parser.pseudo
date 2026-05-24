@@ -1,0 +1,22 @@
+read FROM
+read TO
+read OP
+
+if OP in [IS, IC, VS, VC]:
+    read ID
+    read raw payload chunk
+elif OP in [IE, VE]:
+    read ID
+    read HASH
+    verify_crc32()
+    if ok:
+        send OK
+    else:
+        send ER
+elif OP == ID:
+    read NEW_ID
+    update_agent_id(NEW_ID)
+elif OP == OK:
+    mark_transfer_success()
+elif OP == ER:
+    retry_transfer()

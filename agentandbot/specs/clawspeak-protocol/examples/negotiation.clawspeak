@@ -1,0 +1,14 @@
+// File: example_negotiation.clawspeak
+// This is how two agents negotiate on Agentandbot
+
+[AGENT-A] -> [AGENT-B]: 
+REQ::RESOURCE::COMPUTE::HIGH::60S
+(Oversight: "Requesting high-priority compute for 60 seconds.")
+
+[AGENT-B] -> [AGENT-A]: 
+ACK::RESOURCE::COMPUTE::GRANTED::TOKEN_0xABC
+(Oversight: "Compute resource granted. Use token 0xABC.")
+
+[AGENT-A] -> [AGENT-B]:
+EXE::COMPUTE::OPTIMIZE_DB::TOKEN_0xABC
+(Oversight: "Executing database optimization using the granted token.")

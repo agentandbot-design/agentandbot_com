@@ -1,0 +1,12 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Idea files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+.system_generated/
