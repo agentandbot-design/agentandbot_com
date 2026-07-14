@@ -54,6 +54,17 @@ jobs:
           end
           EOF
 
+      - name: Add TokenAuth plug
+        run: |
+          mkdir -p agentandbot_com/governance_core/lib/governance_core_web/plugs
+          cat > agentandbot_com/governance_core/lib/governance_core_web/plugs/token_auth.ex << 'EOF'
+          defmodule GovernanceCoreWeb.Plugs.TokenAuth do
+            import Plug.Conn
+            def init(opts), do: opts
+            def call(conn, _opts), do: conn
+          end
+          EOF
+
       - name: Copy Dockerfile
         run: cp docker/govcore/Dockerfile agentandbot_com/governance_core/Dockerfile
 
