@@ -1,4 +1,58 @@
-This is a web application written using the Phoenix web framework.
+﻿# DOX framework - LesTupid\les_ai\ai_kadro\kadro_platform
+
+- DOX is a highly performant AGENTS.md hierarchy installed here.
+- Agent must follow DOX instructions across any edits.
+
+## Core Contract
+
+- AGENTS.md files are binding work contracts for their subtrees.
+- Work products, source materials, instructions, records, assets, and durable docs must stay understandable from the nearest applicable AGENTS.md plus every parent AGENTS.md above it.
+
+## Read Before Editing
+
+- 🔴 **Software Engineering Principles**: Geliştirmeye başlamadan önce mutlaka [ENTERPRISE-ENGINEERING-PRINCIPLES.md](file:///B:/DEV/ENTERPRISE-ENGINEERING-PRINCIPLES.md) dosyasını okuyun, projenin tier seviyesini belirleyin ve kurallara uyun. Eğer bu kurallar dışında bir uygulama yapılacaksa bu durum `AGENTS.md` dosyasında belirtilmelidir; gerekirse `ENTERPRISE-ENGINEERING-PRINCIPLES.md` dosyası proje klasörüne kopyalanıp özelleştirilmiş bir versiyonu oluşturulabilir. Değişiklik küçükse sadece `AGENTS.md` dosyasında belirtilmesi yeterlidir.
+1. Read the root [AGENTS.md](file:///B:/DEV/HAREZM_EKOSISTEMI/AGENTS.md)
+2. Identify every file or folder you expect to touch
+3. Walk from the repository root to each target path
+4. Read every AGENTS.md found along each route
+5. If a parent AGENTS.md lists a child AGENTS.md whose scope contains the path, read that child and continue from there
+6. Use the nearest AGENTS.md as the local contract and parent docs for repo-wide rules
+7. If docs conflict, the closer doc controls local work details, but no child doc may weaken DOX
+
+Do not rely on memory. Re-read the applicable DOX chain in the current session before editing.
+
+## Update After Editing
+
+Every meaningful change requires a DOX pass before the task is done.
+Update the closest owning AGENTS.md when a change affects:
+- purpose, scope, ownership, or responsibilities
+- durable structure, contracts, workflows, or operating rules
+- required inputs, outputs, permissions, constraints, side effects, or artifacts
+- user preferences about behavior, communication, process, organization, or quality
+- AGENTS.md creation, deletion, move, rename, or index contents
+
+Update parent docs when parent-level structure, ownership, workflow, or child index changes. Update child docs when parent changes alter local rules. Remove stale or contradictory text immediately. Small edits that do not change behavior or contracts do not require DOX updates.
+
+## Local Details
+
+- **Role**: KADRO Phoenix platform area.
+- **Surface**: Local/platform app
+- **Type**: backend/app
+- **Audience**: Agent admins and KADRO workflows
+- **Technology**: Elixir/Phoenix
+- **GitHub**: [`https://github.com/ilkerkaanipcioglu/lestupid/tree/main/les_ai/ai_kadro/kadro_platform`](`https://github.com/ilkerkaanipcioglu/lestupid/tree/main/les_ai/ai_kadro/kadro_platform`)
+
+## Workspace Index
+
+Below is the directory mapping for this subtree:
+
+- **[assets](file:///B:/DEV/HAREZM_EKOSISTEMI/LesTupid/les_ai/ai_kadro/kadro_platform/assets/AGENTS.md)**: Subdirectory containing local files.
+- **[config](file:///B:/DEV/HAREZM_EKOSISTEMI/LesTupid/les_ai/ai_kadro/kadro_platform/config/AGENTS.md)**: Subdirectory containing local files.
+- **[lib](file:///B:/DEV/HAREZM_EKOSISTEMI/LesTupid/les_ai/ai_kadro/kadro_platform/lib/AGENTS.md)**: Subdirectory containing local files.
+- **[priv](file:///B:/DEV/HAREZM_EKOSISTEMI/LesTupid/les_ai/ai_kadro/kadro_platform/priv/AGENTS.md)**: Subdirectory containing local files.
+- **[test](file:///B:/DEV/HAREZM_EKOSISTEMI/LesTupid/les_ai/ai_kadro/kadro_platform/test/AGENTS.md)**: Subdirectory containing local files.
+
+## This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
 
@@ -47,6 +101,7 @@ custom classes must fully style the input
 <!-- usage-rules-start -->
 
 <!-- phoenix:elixir-start -->
+
 ## Elixir guidelines
 
 - Elixir lists **do not support index based access via the access syntax**
@@ -104,6 +159,7 @@ custom classes must fully style the input
 <!-- phoenix:elixir-end -->
 
 <!-- phoenix:phoenix-start -->
+
 ## Phoenix guidelines
 
 - Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes.
@@ -122,6 +178,7 @@ custom classes must fully style the input
 <!-- phoenix:phoenix-end -->
 
 <!-- phoenix:ecto-start -->
+
 ## Ecto Guidelines
 
 - **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a message that needs to reference the `message.user.email`
@@ -134,6 +191,7 @@ custom classes must fully style the input
 <!-- phoenix:ecto-end -->
 
 <!-- phoenix:html-start -->
+
 ## Phoenix HTML guidelines
 
 - Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
@@ -203,7 +261,7 @@ custom classes must fully style the input
         <% end %>
       </div>
 
-  and **Never** do this – the program will terminate with a syntax error:
+  and **Never** do this â€“ the program will terminate with a syntax error:
 
       <%!-- THIS IS INVALID NEVER EVER DO THIS --%>
       <div id="<%= @invalid_interpolation %>">
@@ -213,6 +271,7 @@ custom classes must fully style the input
 <!-- phoenix:html-end -->
 
 <!-- phoenix:liveview-start -->
+
 ## Phoenix LiveView guidelines
 
 - **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews

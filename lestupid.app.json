@@ -1,0 +1,241 @@
+{
+  "schema_version": "lestupid.app_manifest.v1",
+  "product_id": "les-ai",
+  "name": "Les AI",
+  "service": "les_ai",
+  "version": "0.1.0",
+  "status": "internal_candidate",
+  "directory": "agentandbot",
+  "summary": "LesTupid compatibility and adapter layer for AI agent products primarily published through agentandbot.com.",
+  "ecosystem_roles": [
+    "ai_assistant",
+    "agent_runtime",
+    "evidence_summary",
+    "scenario_generation",
+    "collective_creative_workspace",
+    "worker_persona",
+    "automation_adapter"
+  ],
+  "identity_activation": {
+    "model": "shared_lestupid_identity",
+    "registration": "local_or_lestupid_identity_layer",
+    "app_activation_required": true,
+    "activation_product_id": "les-ai",
+    "activation_permissions": [
+      "ai_workspace",
+      "agent_tasks",
+      "evidence_summary",
+      "scenario_generation",
+      "collective_scenario_workspace",
+      "automation_runs"
+    ],
+    "sensitive_activation_note": "AI assistance can summarize and recommend, but it cannot silently certify, match, or publish private data.",
+    "user_controls": [
+      "activate",
+      "pause",
+      "revoke",
+      "export"
+    ]
+  },
+  "runtime_modes": [
+    "standalone_app",
+    "ecosystem_activated_app"
+  ],
+  "portability": {
+    "standalone_ready": true,
+    "ecosystem_activation_optional": true,
+    "extraction_difficulty": "medium",
+    "data_owner": "app",
+    "required_adapters": [],
+    "optional_adapters": [
+      "identity_adapter",
+      "activation_adapter",
+      "certification_adapter",
+      "match_opportunity_adapter",
+      "loyalty_adapter",
+      "les_block_adapter"
+    ],
+    "export_required": true,
+    "separation_rule": "AgentAndBot products are published independently on agentandbot.com; LesTupid apps consume them only through optional Les AI compatibility adapters."
+  },
+  "platform_strategy": {
+    "delivery_model": "simple_fast_flexible_api_first",
+    "primary_runtime": "agentandbot.com",
+    "published_product": "agentandbot.com",
+    "lestupid_role": "compatibility_adapter_layer",
+    "mobile_web": "responsive_pwa_first",
+    "mobile_app": "not_first_priority",
+    "desktop_app": "web_pwa_first",
+    "admin_ops": "agentandbot_governance_core"
+  },
+  "ai_policy": {
+    "role": "recommendation_and_evidence_summary_only",
+    "human_review_required_for_final_certification": true,
+    "private_data_default": "do_not_publish",
+    "sensitive_actions_require_explicit_user_or_operator_consent": true,
+    "forbidden_actions": [
+      "silent_final_certification",
+      "silent_matchmaking_activation",
+      "private_message_import_by_default",
+      "publishing_private_user_data",
+      "replacing_app_business_logic",
+      "unlabeled_ai_persona",
+      "platform_evasion_or_fake_account_warming"
+    ]
+  },
+  "agentic_auth": {
+    "inspired_by": "workos/auth.md",
+    "implementation_status": "contract_only_v1",
+    "primary_authorization_surface": "agentandbot.com",
+    "provider_role": "AgentAndBot mints or brokers future identity assertions and revocation events.",
+    "kadro_role": "KADRO agents are hireable AI workers discovered through AgentAndBot and never presented as hidden humans.",
+    "discovery_endpoints": [
+      "/auth.md",
+      "/.well-known/oauth-protected-resource",
+      "/.well-known/oauth-authorization-server"
+    ],
+    "planned_scopes": [
+      "agents:read",
+      "agents:rent",
+      "tasks:assign",
+      "tools:invoke",
+      "credits:spend_limited",
+      "kadro:hire",
+      "lestupid:activate",
+      "proofs:read"
+    ],
+    "consent_required_for": [
+      "agent hire",
+      "tool execution",
+      "credit spending",
+      "cross-app activation",
+      "external messaging",
+      "identity or trust proof sharing"
+    ]
+  },
+  "integrations": {
+    "agentandbot": {
+      "ready": true,
+      "primary": true,
+      "published_outside_lestupid": true,
+      "public_product": "agentandbot.com",
+      "directory": "agentandbot/agentandbot_com"
+    },
+    "ai_kadro": {
+      "ready": true,
+      "optional": true,
+      "directory": "agentandbot/ai_kadro",
+      "use_cases": [
+        "labeled AI worker roster",
+        "student study worker",
+        "sponsor prep worker",
+        "venue ops worker",
+        "scenario actor writer editor reviewer"
+      ]
+    },
+    "ai_senaryo": {
+      "ready": true,
+      "optional": true,
+      "directory": "agentandbot/ai_beraberproje",
+      "use_cases": [
+        "collective story workspace",
+        "campus short film scenario",
+        "service simulation",
+        "quest script",
+        "AI video concepting"
+      ]
+    },
+    "les_certification": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "evidence summary",
+        "review draft",
+        "manipulation pattern detection"
+      ]
+    },
+    "les_wait": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "queue feedback summary",
+        "delay explanation",
+        "fake check-in signal review"
+      ]
+    },
+    "les_match": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "match explanation draft",
+        "safety report summary",
+        "recommendation audit",
+        "KADRO agent candidate matching",
+        "person-to-agent suggestions",
+        "agent-to-task suggestions",
+        "labeled AI mentor or worker matching"
+      ]
+    },
+    "les_poke": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "quest idea generation",
+        "local discovery summary"
+      ]
+    },
+    "les_go": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "KADRO agent help cards",
+        "AgentAndBot task launch cards",
+        "ai_senaryo collective scenario cards"
+      ]
+    },
+    "lescommerce": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "merchant evidence summary",
+        "offer clarity review",
+        "checkout pattern audit"
+      ]
+    },
+    "les_block": {
+      "ready": false,
+      "optional": true,
+      "adapter": "les_block_adapter",
+      "use_cases": [
+        "AI review proof hash",
+        "certification evidence proof"
+      ]
+    }
+  },
+  "well_known": [
+    "/.well-known/lestupid-app.json",
+    "/auth.md",
+    "/.well-known/oauth-protected-resource",
+    "/.well-known/oauth-authorization-server"
+  ],
+  "agent_matchmaking_policy": {
+    "agent_matches_must_be_labeled": true,
+    "presented_as_human": false,
+    "source_label_required": true,
+    "user_controls": [
+      "accept",
+      "reject",
+      "mute",
+      "report"
+    ],
+    "allowed_targets": [
+      "tasks",
+      "mentorship",
+      "workflow_help",
+      "merchant_support",
+      "student_support",
+      "creator_work",
+      "venue_operations"
+    ]
+  }
+}

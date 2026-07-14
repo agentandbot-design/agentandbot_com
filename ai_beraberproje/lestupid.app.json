@@ -1,0 +1,107 @@
+{
+  "schema_version": "lestupid.app_manifest.v1",
+  "product_id": "ai-senaryo",
+  "name": "ai_senaryo",
+  "service": "ai_senaryo",
+  "version": "0.1.0",
+  "status": "internal_candidate",
+  "directory": "agentandbot/ai_beraberproje",
+  "summary": "Collective AI scenario, story, prompt, and video generation workspace aligned with LesTupid products.",
+  "ecosystem_roles": [
+    "scenario_generation",
+    "story_prompting",
+    "video_concepting",
+    "simulation",
+    "collective_creative_workspace",
+    "campus_story_board"
+  ],
+  "identity_activation": {
+    "model": "shared_lestupid_identity",
+    "registration": "local_or_lestupid_identity_layer",
+    "app_activation_required": true,
+    "activation_product_id": "ai-senaryo",
+    "activation_permissions": [
+      "scenario_workspace",
+      "prompt_notes",
+      "simulation_runs",
+      "storyboard_cards",
+      "render_jobs"
+    ],
+    "user_controls": [
+      "activate",
+      "pause",
+      "revoke",
+      "export"
+    ]
+  },
+  "runtime_modes": [
+    "standalone_app",
+    "ecosystem_activated_app"
+  ],
+  "portability": {
+    "standalone_ready": true,
+    "ecosystem_activation_optional": true,
+    "extraction_difficulty": "low",
+    "data_owner": "app",
+    "required_adapters": [],
+    "optional_adapters": [
+      "identity_adapter",
+      "activation_adapter",
+      "certification_adapter"
+    ],
+    "export_required": true,
+    "separation_rule": "ai_senaryo can run as its own scenario workspace; LesTupid apps use it only for optional simulations and creative planning."
+  },
+  "integrations": {
+    "les_ai": {
+      "ready": true,
+      "optional": false
+    },
+    "les_go": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "campus story launch",
+        "event recap scenario",
+        "course or library study story",
+        "service simulation board"
+      ]
+    },
+    "les_wait": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "waiting-flow simulation",
+        "service scenario design"
+      ]
+    },
+    "les_poke": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "quest scenario generation",
+        "creator challenge script"
+      ]
+    },
+    "les_match": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "match safety scenario",
+        "mentor/sponsor conversation simulation",
+        "minor-safe prompt testing"
+      ]
+    },
+    "les_certification": {
+      "ready": true,
+      "optional": true,
+      "use_cases": [
+        "review training scenario",
+        "evidence simulation"
+      ]
+    }
+  },
+  "well_known": [
+    "/.well-known/lestupid-app.json"
+  ]
+}

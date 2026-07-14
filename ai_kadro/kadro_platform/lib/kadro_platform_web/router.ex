@@ -18,10 +18,18 @@ defmodule KadroPlatformWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/auth.md", AgentCardController, :auth_md
     get "/agents", AgentController, :index
     get "/agents/:public_id", AgentController, :show
     get "/agents/:public_id/.well-known/agent-card.json", AgentCardController, :show
     get "/media/*path", MediaController, :show
+  end
+
+  scope "/.well-known", KadroPlatformWeb do
+    pipe_through :api
+
+    get "/oauth-protected-resource", AgentCardController, :oauth_protected_resource
+    get "/oauth-authorization-server", AgentCardController, :oauth_authorization_server
   end
 
   scope "/api", KadroPlatformWeb do
