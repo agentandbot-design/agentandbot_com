@@ -1,0 +1,3 @@
+[submodule "agentandbot_com/governance_core"]
+	path = agentandbot_com/governance_core
+	url = https://github.com/agentandbot-design/agentandbot_com.git

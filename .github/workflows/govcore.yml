@@ -1,0 +1,72 @@
+name: governance_core
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/govcore/**'
+      - '.github/workflows/govcore.yml'
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/governance-core
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout governance_core submodule
+        run: |
+          git clone --depth 1 https://github.com/agentandbot-design/agentandbot_com.git /tmp/govcore
+          rm -rf agentandbot_com/governance_core
+          mv /tmp/govcore agentandbot_com/governance_core
+
+      - name: Fix repo adapter for Postgres
+        run: |
+          cat > agentandbot_com/governance_core/lib/governance_core/repo.ex << 'EOF'
+          defmodule GovernanceCore.Repo do
+            adapter =
+              case System.get_env("DATABASE_URL") do
+                nil -> Ecto.Adapters.SQLite3
+                _   -> Ecto.Adapters.Postgres
+              end
+
+            use Ecto.Repo,
+              otp_app: :governance_core,
+              adapter: adapter
+          end
+          EOF
+
+      - name: Add release.ex
+        run: |
+          cat > agentandbot_com/governance_core/lib/governance_core/release.ex << 'EOF'
+          defmodule GovernanceCore.Release do
+            @app :governance_core
+            def migrate do
+              load_app()
+              for repo <- repos() do
+                {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+              end
+            end
+            defp repos, do: Application.fetch_env!(@app, :ecto_repos)
+            defp load_app, do: Application.load(@app)
+          end
+          EOF
+
+      - name: Copy Dockerfile
+        run: cp docker/govcore/Dockerfile agentandbot_com/governance_core/Dockerfile
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: agentandbot_com/governance_core
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:latest

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  governance_core:
+    image: ghcr.io/ilkerkaanipcioglu/governance-core:latest
+    container_name: governance_core
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - PHX_SERVER=true
+      - PHX_HOST=agentandbot.com
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - DATABASE_URL=${DATABASE_URL}
+    networks:
+      - proxy-network
+      - internal-network
+
+  kadro_platform:
+    image: ghcr.io/ilkerkaanipcioglu/kadro-platform:latest
+    container_name: kadro_platform
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - PHX_SERVER=true
+      - PHX_HOST=kadro.agentandbot.com
+      - SECRET_KEY_BASE=${KADRO_SECRET_KEY_BASE}
+      - DATABASE_PATH=/app/data/kadro_platform.db
+    volumes:
+      - kadro_data:/app/data
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
+  internal-network:
+    external: true
+
+volumes:
+  kadro_data:
